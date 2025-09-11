@@ -1,0 +1,12 @@
+// global scss
+@import "./global/_native.scss";
+
+// layout scss
+@import "./layout/_header.scss";
+
+// components scss
+@import "./components/_banner.scss";
+@import "./components/_projects.scss";
+@import "./components/_featured.scss";
+@import "./components/_about.scss";
+@import "./components/_contact.scss";

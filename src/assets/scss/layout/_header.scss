@@ -1,0 +1,122 @@
+.header {
+    width: 100%;
+    padding: 20px 0;
+    background-color: transparent;
+    position: fixed;
+    top: 0;
+    
+    &-wrap {
+        position: relative;
+        width: 100%;
+        background-color: #01031c;
+        color: white;
+        padding: 16px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-radius: 12px;
+        border: 3px solid #14162d;
+        z-index: 999;
+        max-width: 1350px;
+    }
+
+    &-logo {
+        font-size: 22px;
+
+        @media screen and (max-width: 470px){
+            font-size: 18px;
+        }
+    }
+
+    &-nav {
+        display: flex;
+        align-items: center;
+
+        @media screen and (max-width: 890px){
+            display: none;
+        }
+    }
+
+    &-nav-title {
+        width: 140px;
+        text-align: center;
+        padding: 12px;
+        border-radius: 30px;
+        color: #fff;
+        text-decoration: none;
+        transition: all 0.3s ease;
+
+        &.active {
+            background-color: white;
+            color: black;
+
+            &:hover {
+                background: white;
+                color: black;
+            }
+        }
+
+        &:hover {
+            background: #10122f;
+            color: white;
+        }
+    }
+
+    &-started {
+        padding: 15px 24px;
+        background-color: white;
+        letter-spacing: 1px;
+        border-radius: 12px;
+        font-size: 16px;
+
+        @media screen and (max-width: 890px){
+            display: none;
+        }
+    }
+
+    &-menu-btn {
+        color: white;
+        display: none;
+
+        @media screen and (max-width: 890px){
+            display: block;
+        }
+    }
+
+    &-menu-btn.removeBtn {
+        display: none;
+    }
+
+    &-menu-close {
+        display: none;
+        color: white;
+    }
+
+    &-menu-close.addClose {
+        display: block;
+        color: white;
+        transform: rotateY(360deg);
+    }
+
+    &-menu {
+        width: 450px;
+        position: absolute;
+        top: 100%;
+        z-index: 1;
+        transform: translateY(-200%);
+        transition: all .3s ease-in-out;
+        display: flex;
+        padding: 24px 0;
+        background-color: #01031c;
+    }
+
+    &-menu-nav {
+        display: flex;
+        flex-direction: column;
+        padding-left: 130px;
+    }
+
+    &-menu.active {
+        transform: translateY(0);
+    }
+}
