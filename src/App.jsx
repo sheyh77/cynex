@@ -24,7 +24,6 @@ function App() {
         <Route path="/login" element={<Login setIsAuth={setIsAuth} />} />
         <Route path="/register" element={<Register />} />
 
-        {/* Barcha boshqa sahifalar faqat login bo‘lganda ochiladi */}
         <Route
           path="/"
           element={
