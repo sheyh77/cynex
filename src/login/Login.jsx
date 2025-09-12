@@ -1,13 +1,23 @@
 import { Lock, LogIn, User } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { db } from "../../firebaseConfig";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 
-function Login({ setIsAuth }) {
+function Login({ setIsAuth, setCurrentUser }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+
+  // Sahifa ochilganda, localStorage orqali login holatini tekshirish
+  useEffect(() => {
+    const storedUser = localStorage.getItem("currentUser");
+    if (storedUser) {
+      setIsAuth(true);
+      setCurrentUser(JSON.parse(storedUser));
+      navigate("/", { replace: true });
+    }
+  }, []);
 
   const handleLogin = async () => {
     if (!username.trim() || !password) {
@@ -21,10 +31,31 @@ function Login({ setIsAuth }) {
 
       if (docSnap.exists()) {
         const userData = docSnap.data();
+
+        // Agar foydalanuvchi bloklangan bo'lsa
+        if (!userData.active) {
+          alert("Siz bloklangansiz! Admin bilan bog'laning.");
+          return;
+        }
+
         if (userData.password === password) {
+          // Last login va online statusni yangilash
+          await updateDoc(docRef, {
+            lastLogin: new Date().toISOString(),
+            online: true
+          });
+
+          // IsAuth state ni yangilash
+          setIsAuth(true);
+
+          const currentUser = { username: username.trim(), role: userData.role || "user", id: docSnap.id };
+          setCurrentUser(currentUser);
+
+          // localStorage ga saqlash (refreshda ham saqlansin)
+          localStorage.setItem("currentUser", JSON.stringify(currentUser));
+
           alert("Login muvaffaqiyatli!");
-          setIsAuth(true); // App.jsx dagi state ni true qilamiz
-          navigate("/", { replace: true }); // home sahifaga yo'naltirish
+          navigate("/", { replace: true });
         } else {
           alert("Parol noto‘g‘ri!");
         }

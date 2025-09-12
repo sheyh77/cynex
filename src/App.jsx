@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import Header from "./layout/Header";
 import Projects from "./components/Projects";
@@ -16,30 +16,45 @@ function PrivateRoute({ isAuth, children }) {
 }
 
 function App() {
-  const [isAuth, setIsAuth] = useState(false); // login bo‘lsa true qilamiz
+  const [isAuth, setIsAuth] = useState(false); // login bo‘lsa true
+  const [currentUser, setCurrentUser] = useState(null); // foydalanuvchi ma’lumotlari
+
+  // App ochilganda localStorage orqali foydalanuvchini tiklash
+  useEffect(() => {
+    const storedUser = localStorage.getItem("currentUser");
+    if (storedUser) {
+      const user = JSON.parse(storedUser);
+      setCurrentUser(user);
+      setIsAuth(true);
+    }
+  }, []);
 
   return (
-      <Routes>
-        {/* Login va Register ochiq sahifalar */}
-        <Route path="/login" element={<Login setIsAuth={setIsAuth} />} />
-        <Route path="/register" element={<Register />} />
+    <Routes>
+      {/* Login va Register sahifalari */}
+      <Route
+        path="/login"
+        element={<Login setIsAuth={setIsAuth} setCurrentUser={setCurrentUser} />}
+      />
+      <Route path="/register" element={<Register />} />
 
-        <Route
-          path="/"
-          element={
-            <PrivateRoute isAuth={isAuth}>
-              <>
-                <Header />
-                <Banner />
-                <Projects />
-                <Features />
-                <About />
-                <Contact />
-              </>
-            </PrivateRoute>
-          }
-        />
-      </Routes>
+      {/* Protected Home sahifalar */}
+      <Route
+        path="/"
+        element={
+          <PrivateRoute isAuth={isAuth}>
+            <>
+              <Header currentUser={currentUser} />
+              <Banner />
+              <Projects />
+              <Features />
+              <About />
+              <Contact />
+            </>
+          </PrivateRoute>
+        }
+      />
+    </Routes>
   );
 }
 
