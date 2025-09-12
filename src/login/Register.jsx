@@ -28,11 +28,12 @@ const Register = () => {
     setGeneratedCode(newCode);
 
     try {
-      const res = await fetch("https://cynex-backend-1.onrender.com", {
+      const res = await fetch("https://cynex-backend-1.onrender.com/send-code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone: formData.phone, code: newCode }),
       });
+
 
       const data = await res.json();
       if (data.success) alert("Kod yuborildi!");
