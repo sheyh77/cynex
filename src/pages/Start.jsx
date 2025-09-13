@@ -1,73 +1,117 @@
-import React from "react";
-import { Modal, Button, Typography, Space, message } from "antd";
-import { db } from "../../firebaseConfig"; // Firebase config
+import React, { useState } from "react";
+import { Modal, Button, Typography, Space, message, Input, DatePicker, Form } from "antd";
+import { db } from "../../firebaseConfig"; 
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import "antd/dist/reset.css";
 
 const { Title, Paragraph } = Typography;
 
 function Start({ visible, setVisible, currentUser }) {
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
 
-    const handleJoinCourse = async () => {
-        if (!currentUser) {
-            message.error("Avval login qiling!");
-            return;
-        }
+  const handleJoinCourse = async () => {
+    try {
+      const values = await form.validateFields();
 
-        try {
-            // Firebase ga yangi so'rov qo'shish
-            await addDoc(collection(db, "courseRequests"), {
-                userId: currentUser.id,      // bu endi 'shahriyor'
-                username: currentUser.username,
-                name: currentUser.name,
-                createdAt: serverTimestamp(),
-                status: "pending"
-            });
+      if (!currentUser) {
+        message.error("Avval login qiling!");
+        return;
+      }
 
-            // Muvaffaqiyatli xabar
-            message.success("So‘rovingiz qabul qilindi! Tez orada habar beriladi.");
-            setVisible(false); // modalni yopish
-        } catch (err) {
-            console.error(err);
-            message.error("Xatolik yuz berdi! Iltimos qayta urinib ko‘ring.");
-        }
-    };
+      setLoading(true);
 
-    const handleLearnMore = () => {
-        message.info("Batafsil ma’lumot sahifaga yo‘naltirildi!");
-        setVisible(false);
-    };
+      // Firebase ga yangi so'rov qo'shish
+      await addDoc(collection(db, "courseRequests"), {
+        userId: currentUser.id,
+        username: currentUser.username,
+        name: values.name,
+        surname: values.surname,
+        birthDate: values.birthDate ? values.birthDate.format("YYYY-MM-DD") : null,
+        phone: values.phone,
+        createdAt: serverTimestamp(),
+        status: "pending",
+      });
 
-    return (
-        <Modal
-            title="Bizning Maxsus Kursimiz"
-            open={visible}
-            onCancel={() => setVisible(false)}
-            footer={null}
-            centered
-            width={500}
+      message.success("So‘rovingiz qabul qilindi! Tez orada habar beriladi.");
+      form.resetFields();
+      setVisible(false);
+    } catch (err) {
+      console.error(err);
+      message.error("Xatolik yuz berdi! Iltimos qayta urinib ko‘ring.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLearnMore = () => {
+    message.info("Batafsil ma’lumot sahifaga yo‘naltirildi!");
+    setVisible(false);
+  };
+
+  return (
+    <Modal
+      title="Bizning Maxsus Kursimiz"
+      open={visible}
+      onCancel={() => setVisible(false)}
+      footer={null}
+      centered
+      width={500}
+    >
+      <Typography>
+        <Title level={3}>Salom! Kursimizga xush kelibsiz!</Title>
+        <Paragraph>
+          Bu yerda siz React, JavaScript va boshqa zamonaviy web texnologiyalarni o‘rganishingiz mumkin.
+        </Paragraph>
+        <Paragraph>
+          Ro‘yxatdan o‘tish uchun quyidagi ma’lumotlarni kiriting:
+        </Paragraph>
+      </Typography>
+
+      {/* Forma */}
+      <Form form={form} layout="vertical">
+        <Form.Item
+          name="name"
+          label="Ism"
+          rules={[{ required: true, message: "Ismingizni kiriting!" }]}
         >
-            <Typography>
-                <Title level={3}>Salom! Kursimizga xush kelibsiz!</Title>
-                <Paragraph>
-                    Bu yerda siz React, JavaScript va boshqa zamonaviy web texnologiyalarni o‘rganishingiz mumkin.
-                    Kursimiz interaktiv, amaliyotga boy va har bir bosqichda qo‘llab-quvvatlash mavjud.
-                </Paragraph>
-                <Paragraph>
-                    Siz darhol kursga qo‘shilib, o‘zingizga qulay vaqtda darslarni boshlashingiz mumkin.
-                </Paragraph>
-            </Typography>
+          <Input placeholder="Ismingizni kiriting" />
+        </Form.Item>
 
-            <Space style={{ marginTop: 20, display: "flex", justifyContent: "space-between" }}>
-                <Button type="primary" onClick={handleJoinCourse}>
-                    Kursga qo‘shilish
-                </Button>
-                <Button onClick={handleLearnMore}>
-                    Batafsil
-                </Button>
-            </Space>
-        </Modal>
-    );
+        <Form.Item
+          name="surname"
+          label="Familiya"
+          rules={[{ required: true, message: "Familiyangizni kiriting!" }]}
+        >
+          <Input placeholder="Familiyangizni kiriting" />
+        </Form.Item>
+
+        <Form.Item
+          name="birthDate"
+          label="Tug‘ilgan sana"
+          rules={[{ required: true, message: "Tug‘ilgan sanangizni kiriting!" }]}
+        >
+          <DatePicker style={{ width: "100%" }} />
+        </Form.Item>
+
+        <Form.Item
+          name="phone"
+          label="Telefon raqami"
+          rules={[{ required: true, message: "Telefon raqamingizni kiriting!" }]}
+        >
+          <Input placeholder="+998901234567" />
+        </Form.Item>
+      </Form>
+
+      {/* Tugmalar */}
+      <Space style={{ marginTop: 20, display: "flex", justifyContent: "space-between" }}>
+        <Button type="primary" loading={loading} onClick={handleJoinCourse}>
+          Kursga qo‘shilish
+        </Button>
+        <Button onClick={handleLearnMore}>Batafsil</Button>
+      </Space>
+    </Modal>
+  );
 }
 
 export default Start;
