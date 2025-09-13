@@ -7,6 +7,9 @@ import "antd/dist/reset.css";
 const { Title, Paragraph } = Typography;
 
 function Start({ visible, setVisible, currentUser }) {
+
+    const test = null
+    
     const handleJoinCourse = async () => {
         if (!currentUser) {
             message.error("Avval login qiling!");
