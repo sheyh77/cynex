@@ -8,8 +8,6 @@ const { Title, Paragraph } = Typography;
 
 function Start({ visible, setVisible, currentUser }) {
 
-    const test = null
-    
     const handleJoinCourse = async () => {
         if (!currentUser) {
             message.error("Avval login qiling!");
@@ -19,13 +17,12 @@ function Start({ visible, setVisible, currentUser }) {
         try {
             // Firebase ga yangi so'rov qo'shish
             await addDoc(collection(db, "courseRequests"), {
-                userId: currentUser.id || "",        // bu username bo‘ladi
-                username: currentUser.username || "",
-                name: currentUser.name || "",
+                userId: currentUser.id,      // bu endi 'shahriyor'
+                username: currentUser.username,
+                name: currentUser.name,
                 createdAt: serverTimestamp(),
                 status: "pending"
             });
-
 
             // Muvaffaqiyatli xabar
             message.success("So‘rovingiz qabul qilindi! Tez orada habar beriladi.");

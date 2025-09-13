@@ -55,10 +55,10 @@ const Register = ({ setIsAuth, setCurrentUser }) => {
       await setDoc(userRef, newUser);
 
       const currentUser = {
+        id: username,                // id sifatida username bo‘ladi
         username: newUser.username,
         role: newUser.role,
-        id: userRef.id,
-        name: newUser.name // bu juda muhim
+        name: newUser.name
       };
       setIsAuth(true);
       setCurrentUser(currentUser);
