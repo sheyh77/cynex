@@ -14,6 +14,7 @@ function Start({ visible, setVisible, currentUser }) {
         }
 
         try {
+            // Firebase ga yangi so'rov qo'shish
             await addDoc(collection(db, "courseRequests"), {
                 userId: currentUser.id,
                 username: currentUser.username,
@@ -22,11 +23,12 @@ function Start({ visible, setVisible, currentUser }) {
                 status: "pending" // tasdiqlanish holati
             });
 
-            message.success("So‘rovingiz yuborildi, tez orada tasdiqlanasiz!");
+            // Muvaffaqiyatli xabar
+            message.success("So‘rovingiz qabul qilindi! Tez orada habar beriladi.");
             setVisible(false); // modalni yopish
         } catch (err) {
             console.error(err);
-            message.error("Xatolik yuz berdi!");
+            message.error("Xatolik yuz berdi! Iltimos qayta urinib ko‘ring.");
         }
     };
 
@@ -43,9 +45,7 @@ function Start({ visible, setVisible, currentUser }) {
             footer={null}
             centered
             width={500}
-            styles={{ body: { padding: "30px" } }}
         >
-
             <Typography>
                 <Title level={3}>Salom! Kursimizga xush kelibsiz!</Title>
                 <Paragraph>

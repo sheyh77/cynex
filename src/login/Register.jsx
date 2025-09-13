@@ -54,12 +54,17 @@ const Register = ({ setIsAuth, setCurrentUser }) => {
 
       await setDoc(userRef, newUser);
 
-      const currentUser = { username: newUser.username, role: newUser.role, id: userRef.id };
+      const currentUser = {
+        username: newUser.username,
+        role: newUser.role,
+        id: userRef.id,
+        name: newUser.name // bu juda muhim
+      };
       setIsAuth(true);
       setCurrentUser(currentUser);
       localStorage.setItem("currentUser", JSON.stringify(currentUser));
 
-      alert("Ro'yxatdan o'tish muvaffaqiyatli!");      
+      alert("Ro'yxatdan o'tish muvaffaqiyatli!");
 
       setFormData({ name: "", username: "", password: "" });
       navigate("/", { replace: true });
