@@ -62,7 +62,7 @@ const Register = ({ setIsAuth, setCurrentUser }) => {
       };
       setIsAuth(true);
       setCurrentUser(currentUser);
-      localStorage.setItem("currentUser", JSON.stringify(currentUser));
+      // localStorage.setItem("currentUser", JSON.stringify(currentUser));
 
       alert("Ro'yxatdan o'tish muvaffaqiyatli!");
 
