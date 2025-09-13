@@ -10,6 +10,7 @@ const Register = ({ setIsAuth, setCurrentUser }) => {
     password: "",
   });
   const [usernameError, setUsernameError] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -19,39 +20,55 @@ const Register = ({ setIsAuth, setCurrentUser }) => {
   };
 
   const registerUser = async () => {
-    if (!formData.username.trim() || !formData.password || !formData.name.trim()) return;
+    const name = formData.name.trim();
+    const username = formData.username.trim();
+    const password = formData.password;
+
+    if (!name || !username || !password) {
+      alert("Iltimos barcha maydonlarni to‘ldiring!");
+      return;
+    }
+
+    setLoading(true);
 
     try {
-      const userRef = doc(db, "users", formData.username.trim());
+      const userRef = doc(db, "users", username);
       const userSnap = await getDoc(userRef);
 
       if (userSnap.exists()) {
         setUsernameError(true);
+        setLoading(false);
         return;
       }
 
       const newUser = {
-        name: formData.name.trim(),
-        username: formData.username.trim(),
-        password: formData.password,
+        name,
+        username,
+        password,
         createdAt: new Date().toISOString(),
-        active: true,  // foydalanuvchi faol bo'lsin
-        role: "user"   // default rol
+        active: true,
+        role: "user",
+        lastLogin: new Date().toISOString(),
+        online: true
       };
 
       await setDoc(userRef, newUser);
 
-      // Avtomatik login qilish
       const currentUser = { username: newUser.username, role: newUser.role, id: userRef.id };
       setIsAuth(true);
       setCurrentUser(currentUser);
       localStorage.setItem("currentUser", JSON.stringify(currentUser));
+
+      alert("Ro'yxatdan o'tish muvaffaqiyatli!");      
 
       setFormData({ name: "", username: "", password: "" });
       navigate("/", { replace: true });
 
     } catch (err) {
       console.error(err);
+      alert("Xatolik yuz berdi: " + err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -78,6 +95,7 @@ const Register = ({ setIsAuth, setCurrentUser }) => {
           className={usernameError ? "error" : ""}
           required
         />
+        {usernameError && <p style={{ color: "red" }}>Username mavjud!</p>}
 
         <input
           type="password"
@@ -88,8 +106,13 @@ const Register = ({ setIsAuth, setCurrentUser }) => {
           required
         />
 
-        <button type="button" onClick={registerUser} className="register-button">
-          Ro'yxatdan o'tish
+        <button
+          type="button"
+          onClick={registerUser}
+          className="register-button"
+          disabled={loading}
+        >
+          {loading ? "Yuklanmoqda..." : "Ro'yxatdan o'tish"}
         </button>
 
         <p className="register-in">
