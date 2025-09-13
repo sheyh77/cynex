@@ -16,12 +16,13 @@ function Start({ visible, setVisible, currentUser }) {
         try {
             // Firebase ga yangi so'rov qo'shish
             await addDoc(collection(db, "courseRequests"), {
-                userId: currentUser.id,
-                username: currentUser.username,
-                name: currentUser.name,
+                userId: currentUser.id || "",        // bu username bo‘ladi
+                username: currentUser.username || "",
+                name: currentUser.name || "",
                 createdAt: serverTimestamp(),
-                status: "pending" // tasdiqlanish holati
+                status: "pending"
             });
+
 
             // Muvaffaqiyatli xabar
             message.success("So‘rovingiz qabul qilindi! Tez orada habar beriladi.");
