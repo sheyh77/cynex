@@ -48,7 +48,13 @@ function Login({ setIsAuth, setCurrentUser }) {
           // IsAuth state ni yangilash
           setIsAuth(true);
 
-          const currentUser = { username: username.trim(), role: userData.role || "user", id: docSnap.id };
+          const currentUser = {
+            username: username.trim(),
+            name: userData.name || "",    // <-- bu maydon qo‘shildi
+            role: userData.role || "user",
+            id: docSnap.id
+          };
+
           setCurrentUser(currentUser);
 
           // localStorage ga saqlash (refreshda ham saqlansin)

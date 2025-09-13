@@ -3,42 +3,53 @@ import { db } from "../../firebaseConfig";
 import { setDoc, doc, getDoc } from "firebase/firestore";
 import { useNavigate, Link } from "react-router-dom";
 
-const Register = () => {
+const Register = ({ setIsAuth, setCurrentUser }) => {
   const [formData, setFormData] = useState({
     name: "",
     username: "",
     password: "",
   });
-  const [usernameError, setUsernameError] = useState(false); // xatolik holati
+  const [usernameError, setUsernameError] = useState(false);
 
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    if (e.target.name === "username") setUsernameError(false); // yozilganda xatolikni olib tashlash
+    if (e.target.name === "username") setUsernameError(false);
   };
 
   const registerUser = async () => {
-    if (!formData.username.trim()) return;
+    if (!formData.username.trim() || !formData.password || !formData.name.trim()) return;
 
     try {
       const userRef = doc(db, "users", formData.username.trim());
       const userSnap = await getDoc(userRef);
 
       if (userSnap.exists()) {
-        setUsernameError(true); // username xato
+        setUsernameError(true);
         return;
       }
 
-      await setDoc(userRef, {
+      const newUser = {
         name: formData.name.trim(),
         username: formData.username.trim(),
         password: formData.password,
         createdAt: new Date().toISOString(),
-      });
+        active: true,  // foydalanuvchi faol bo'lsin
+        role: "user"   // default rol
+      };
+
+      await setDoc(userRef, newUser);
+
+      // Avtomatik login qilish
+      const currentUser = { username: newUser.username, role: newUser.role, id: userRef.id };
+      setIsAuth(true);
+      setCurrentUser(currentUser);
+      localStorage.setItem("currentUser", JSON.stringify(currentUser));
 
       setFormData({ name: "", username: "", password: "" });
       navigate("/", { replace: true });
+
     } catch (err) {
       console.error(err);
     }
@@ -48,6 +59,7 @@ const Register = () => {
     <section className="register">
       <form className="register-form" onSubmit={(e) => e.preventDefault()}>
         <h1 className="register-title">cynex</h1>
+
         <input
           type="text"
           name="name"

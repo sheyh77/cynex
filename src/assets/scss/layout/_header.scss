@@ -63,6 +63,7 @@
     }
 
     &-started {
+        color: black;
         padding: 15px 24px;
         background-color: white;
         letter-spacing: 1px;
@@ -102,6 +103,7 @@
         width: 450px;
         position: absolute;
         top: 100%;
+        left: 0;
         z-index: 1;
         transform: translateY(-200%);
         transition: all .3s ease-in-out;
@@ -113,10 +115,22 @@
     &-menu-nav {
         display: flex;
         flex-direction: column;
-        padding-left: 130px;
+        align-items: start;
+        gap: 10px;
+        padding: 24px;
     }
 
     &-menu.active {
         transform: translateY(0);
+    }
+
+    &-menu-title {
+        color: white;
+    }
+
+    &-started-menu {
+        padding: 8px;
+        border-radius: 6px;
+        background-color: white;
     }
 }
