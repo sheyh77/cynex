@@ -9,7 +9,6 @@ import Contact from "./components/Contact";
 import Banner from "./components/Banner";
 import Login from "./login/Login";
 import Register from "./login/Register";
-import Start from "./pages/Start";
 
 // Protected Route Component
 function PrivateRoute({ isAuth, children }) {
@@ -32,42 +31,34 @@ function App() {
   }, []);
 
   return (
-    <>
-      <Routes>
-        {/* Login va Register sahifalari */}
-        <Route
-          path="/login"
-          element={<Login setIsAuth={setIsAuth} setCurrentUser={setCurrentUser} />}
-        />
-        <Route path="/register" element={<Register />} />
+    <Routes>
+      {/* Login va Register sahifalari */}
+      <Route
+        path="/login"
+        element={<Login setIsAuth={setIsAuth} setCurrentUser={setCurrentUser} />}
+      />
+      <Route
+        path="/register"
+        element={<Register setIsAuth={setIsAuth} setCurrentUser={setCurrentUser} />}
+      />
 
-        {/* Protected Home sahifalar */}
-        <Route
-          path="/"
-          element={
-            <PrivateRoute isAuth={isAuth}>
-              <>
-                <Header currentUser={currentUser} onStartClick={() => setStartVisible(true)} />
-                <Banner onStartClick={() => setStartVisible(true)} />
-                <Projects />
-                <Features />
-                <About />
-                <Contact />
-              </>
-            </PrivateRoute>
-          }
-        />
-      </Routes>
-
-      {/* Start modalni App darajasida boshqarish */}
-      {startVisible && (
-        <Start
-          visible={startVisible}
-          setVisible={setStartVisible}
-          currentUser={currentUser}
-        />
-      )}
-    </>
+      {/* Protected Home sahifalar */}
+      <Route
+        path="/"
+        element={
+          <PrivateRoute isAuth={isAuth}>
+            <>
+              <Header currentUser={currentUser} onStartClick={() => setStartVisible(true)} />
+              <Banner onStartClick={() => setStartVisible(true)} />
+              <Projects />
+              <Features />
+              <About />
+              <Contact />
+            </>
+          </PrivateRoute>
+        }
+      />
+    </Routes>
   );
 }
 
