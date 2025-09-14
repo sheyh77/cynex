@@ -1,8 +1,9 @@
 import React, { useRef, useState } from 'react';
-import { MenuIcon, X } from 'lucide-react';
+import { MenuIcon, UserCircle, X, Bell } from 'lucide-react';
 import { motion } from "framer-motion";
+import { Link } from 'react-router-dom';
 
-function Header({ onStartClick }) {
+function Header({ onStartClick, notifications = [] }) {
   const [active, setActive] = useState("Asosiy");
   const MenuRef = useRef(null);
   const MenuBtn = useRef(null);
@@ -27,14 +28,15 @@ function Header({ onStartClick }) {
   const handleClick = (e, item) => {
     e.preventDefault();
     setActive(item);
-
     const section = document.getElementById(item.toLowerCase());
     if (section) section.scrollIntoView({ behavior: "smooth" });
-
-    CloseMenu(); // menu ichida bo‘lsa yopish
+    CloseMenu();
   };
 
   const menuItems = ["Asosiy", "Loyihalar", "Xususiyatlari", "Biz haqimizda", "Bog'lanish"];
+
+  // Faqat yangi kelgan xabarlar
+  const newNotificationsCount = notifications.filter(n => !n.read).length;
 
   return (
     <header className="header">
@@ -57,7 +59,33 @@ function Header({ onStartClick }) {
             ))}
           </nav>
 
-          <button className="header-started" onClick={onStartClick}>Boshlash</button>
+          {/* Notification */}
+          <div style={{ position: "relative", marginRight: 15 }} className='header-profile'>
+            <Link to="/profile" state={{ activeTab: "3" }}>
+              <Bell size={28} />
+              {newNotificationsCount > 0 && (
+                <span
+                  style={{
+                    position: "absolute",
+                    top: -5,
+                    right: -5,
+                    background: "red",
+                    color: "white",
+                    borderRadius: "50%",
+                    padding: "2px 6px",
+                    fontSize: 12,
+                    fontWeight: "bold"
+                  }}
+                >
+                  {newNotificationsCount}
+                </span>
+              )}
+            </Link>
+            <Link to="/profile">
+              <UserCircle size={32} />
+            </Link>
+          </div>
+
 
           <button className="header-menu-btn" ref={MenuBtn} onClick={MenuClick}>
             <MenuIcon size={32} />

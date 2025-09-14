@@ -3,7 +3,7 @@ import { db } from "../../firebaseConfig";
 import { setDoc, doc, getDoc } from "firebase/firestore";
 import { useNavigate, Link } from "react-router-dom";
 
-const Register = ({ setIsAuth, setCurrentUser }) => {
+const Register = ({ setIsAuth, setUser }) => {
   const [formData, setFormData] = useState({
     name: "",
     username: "",
@@ -55,18 +55,19 @@ const Register = ({ setIsAuth, setCurrentUser }) => {
       await setDoc(userRef, newUser);
 
       const currentUser = {
-        id: username,                // id sifatida username bo‘ladi
+        id: username,
+        uid: username,
         username: newUser.username,
+        name: newUser.name,
         role: newUser.role,
-        name: newUser.name
+        active: newUser.active
       };
+
+      localStorage.setItem("currentUser", JSON.stringify(currentUser));
       setIsAuth(true);
-      setCurrentUser(currentUser);
-      // localStorage.setItem("currentUser", JSON.stringify(currentUser));
+      setUser(currentUser);
 
       alert("Ro'yxatdan o'tish muvaffaqiyatli!");
-
-      setFormData({ name: "", username: "", password: "" });
       navigate("/", { replace: true });
 
     } catch (err) {
