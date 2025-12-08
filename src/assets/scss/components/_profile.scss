@@ -1,0 +1,32 @@
+.profile {
+    margin-top: 150px;
+
+    &-wrap {
+        height: 650px;
+        background-color: white;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    &-card {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        height: 100%;
+    }
+
+    &-card-item {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+
+        @media screen and (max-width: 450px){
+            flex-direction: column;
+            align-items: center;
+        }
+    }
+
+    &-card-item-none {
+        @media screen and (max-width: 450px){
+            display: none;
+        }
+    }
+}

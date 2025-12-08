@@ -26,6 +26,7 @@ import {
   onSnapshot,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import Header from "../layout/Header";
 
 const { Title, Text } = Typography;
 
@@ -65,11 +66,16 @@ function Profile({ currentUser, onLogout }) {
 
   // Admin xabarlarini real-time olish
   useEffect(() => {
-    const q = query(collection(db, "notifications"), orderBy("createdAt", "desc"));
+    const q = query(
+      collection(db, "notifications"),
+      orderBy("createdAt", "desc")
+    );
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setAnnouncements(
-        data.filter((item) => item.userId === "all" || item.userId === currentUser?.uid)
+        data.filter(
+          (item) => item.userId === "all" || item.userId === currentUser?.uid
+        )
       );
     });
     return () => unsubscribe();
@@ -115,152 +121,163 @@ function Profile({ currentUser, onLogout }) {
   };
 
   if (loading)
-    return <Spin size="large" style={{ display: "block", margin: "100px auto" }} />;
+    return (
+      <Spin size="large" style={{ display: "block", margin: "100px auto" }} />
+    );
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: "20px" }}>
-      <Card
-        bordered
-        style={{ borderRadius: 20, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
-      >
-        {/* Profil ma'lumotlari */}
-        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          <Avatar
-            size={100}
-            icon={<UserOutlined />}
-            src={userData?.avatar}
-            style={{ backgroundColor: "#1677ff" }}
-          />
-          <div>
-            <Title level={3}>{userData?.name}</Title>
-            <Text type="secondary">@{userData?.username}</Text>
-            <br />
-            <Text>{userData?.email}</Text>
-            <br />
-            <Text>{userData?.phone}</Text>
-          </div>
-          <Upload customRequest={handleAvatarUpload} showUploadList={false}>
-            <Button icon={<UploadOutlined />}>Avatarni yuklash</Button>
-          </Upload>
+    <section className="profile">
+      <Header />
+      <div className="cantainer">
+        <div className="profile-wrap">
+          <Card className="profile-card">
+            {/* Profil ma'lumotlari */}
+            <div className="profile-card-item">
+              <Avatar
+                size={100}
+                icon={<UserOutlined />}
+                src={userData?.avatar}
+                style={{ backgroundColor: "#1677ff" }}
+              />
+              <div>
+                <Title className="profile-card-item-none" level={3}>{userData?.name}</Title>
+                <Text type="secondary">@{userData?.username}</Text>
+                <br />
+                <Text className="profile-card-item-none">{userData?.email}</Text>
+                <br />
+                <Text className="profile-card-item-none">{userData?.phone}</Text>
+              </div>
+            </div>
+
+            <Divider />
+
+            {/* Tabs */}
+            <Tabs
+              activeKey={activeTab}
+              onChange={(key) => setActiveTab(key)}
+              items={[
+                {
+                  key: "1",
+                  label: "Kurslar tarixi",
+                  children:
+                    orders.length > 0 ? (
+                      <List
+                        itemLayout="horizontal"
+                        dataSource={orders}
+                        renderItem={(order) => (
+                          <List.Item>
+                            <List.Item.Meta
+                              title={order.title}
+                              description={`Sana: ${order.date}`}
+                            />
+                            <Text>{order.status}</Text>
+                          </List.Item>
+                        )}
+                      />
+                    ) : (
+                      <Text>Hozircha tasdiqlangan kurslar yo‘q.</Text>
+                    ),
+                },
+                {
+                  key: "2",
+                  label: "Sozlamalar",
+                  children: editing ? (
+                    <Form
+                      layout="vertical"
+                      initialValues={userData}
+                      onFinish={handleUpdate}
+                      style={{ maxWidth: 400 }}
+                    >
+                      <Form.Item label="Ism" name="name">
+                        <Input />
+                      </Form.Item>
+                      <Form.Item label="Username" name="username">
+                        <Input />
+                      </Form.Item>
+                      <Form.Item label="Email" name="email">
+                        <Input />
+                      </Form.Item>
+                      <Form.Item label="Telefon" name="phone">
+                        <Input />
+                      </Form.Item>
+                      <div style={{ display: "flex", gap: 10 }}>
+                        <Button type="primary" htmlType="submit">
+                          Saqlash
+                        </Button>
+                        <Button onClick={() => setEditing(false)}>
+                          Bekor qilish
+                        </Button>
+                      </div>
+                    </Form>
+                  ) : (
+                    <div>
+                      <p>
+                        <strong>Ism:</strong> {userData?.name}
+                      </p>
+                      <p>
+                        <strong>Username:</strong> @{userData?.username}
+                      </p>
+                      <p>
+                        <strong>Email:</strong> {userData?.email}
+                      </p>
+                      <p>
+                        <strong>Telefon:</strong> {userData?.phone}
+                      </p>
+                      <Button
+                        type="primary"
+                        icon={<EditOutlined />}
+                        onClick={() => setEditing(true)}
+                      >
+                        Tahrirlash
+                      </Button>
+                    </div>
+                  ),
+                },
+                {
+                  key: "3",
+                  label: "Xabarlar",
+                  children:
+                    announcements.length > 0 ? (
+                      <div
+                        style={{
+                          maxHeight: "250px",
+                          overflowY: "auto",
+                          paddingRight: "10px",
+                        }}
+                      >
+                        <List
+                          itemLayout="horizontal"
+                          dataSource={announcements}
+                          renderItem={(item) => (
+                            <List.Item>
+                              <List.Item.Meta
+                                title={item.title}
+                                description={item.text || item.message}
+                              />
+                              <Text type="secondary">
+                                {item.createdAt?.toDate
+                                  ? item.createdAt.toDate().toLocaleString()
+                                  : ""}
+                              </Text>
+                            </List.Item>
+                          )}
+                        />
+                      </div>
+                    ) : (
+                      <Text>Hozircha xabar yo‘q 🔔</Text>
+                    ),
+                },
+              ]}
+            />
+
+            <Divider />
+            <Button danger onClick={onLogout}>
+              Chiqish
+            </Button>
+          </Card>
         </div>
-
-        <Divider />
-
-        {/* Tabs */}
-        <Tabs
-          activeKey={activeTab}
-          onChange={(key) => setActiveTab(key)}
-          items={[
-            {
-              key: "1",
-              label: "Kurslar tarixi",
-              children:
-                orders.length > 0 ? (
-                  <List
-                    itemLayout="horizontal"
-                    dataSource={orders}
-                    renderItem={(order) => (
-                      <List.Item>
-                        <List.Item.Meta
-                          title={order.title}
-                          description={`Sana: ${order.date}`}
-                        />
-                        <Text>{order.status}</Text>
-                      </List.Item>
-                    )}
-                  />
-                ) : (
-                  <Text>Hozircha tasdiqlangan kurslar yo‘q.</Text>
-                ),
-            },
-            {
-              key: "2",
-              label: "Sozlamalar",
-              children: editing ? (
-                <Form
-                  layout="vertical"
-                  initialValues={userData}
-                  onFinish={handleUpdate}
-                  style={{ maxWidth: 400 }}
-                >
-                  <Form.Item label="Ism" name="name">
-                    <Input />
-                  </Form.Item>
-                  <Form.Item label="Username" name="username">
-                    <Input />
-                  </Form.Item>
-                  <Form.Item label="Email" name="email">
-                    <Input />
-                  </Form.Item>
-                  <Form.Item label="Telefon" name="phone">
-                    <Input />
-                  </Form.Item>
-                  <div style={{ display: "flex", gap: 10 }}>
-                    <Button type="primary" htmlType="submit">
-                      Saqlash
-                    </Button>
-                    <Button onClick={() => setEditing(false)}>Bekor qilish</Button>
-                  </div>
-                </Form>
-              ) : (
-                <div>
-                  <p>
-                    <strong>Ism:</strong> {userData?.name}
-                  </p>
-                  <p>
-                    <strong>Username:</strong> @{userData?.username}
-                  </p>
-                  <p>
-                    <strong>Email:</strong> {userData?.email}
-                  </p>
-                  <p>
-                    <strong>Telefon:</strong> {userData?.phone}
-                  </p>
-                  <Button
-                    type="primary"
-                    icon={<EditOutlined />}
-                    onClick={() => setEditing(true)}
-                  >
-                    Tahrirlash
-                  </Button>
-                </div>
-              ),
-            },
-            {
-              key: "3",
-              label: "Xabarlar",
-              children:
-                announcements.length > 0 ? (
-                  <List
-                    itemLayout="horizontal"
-                    dataSource={announcements}
-                    renderItem={(item) => (
-                      <List.Item>
-                        <List.Item.Meta
-                          title={item.title}
-                          description={item.text || item.message}
-                        />
-                        <Text type="secondary">
-                          {item.createdAt?.toDate
-                            ? item.createdAt.toDate().toLocaleString()
-                            : ""}
-                        </Text>
-                      </List.Item>
-                    )}
-                  />
-                ) : (
-                  <Text>Hozircha xabar yo‘q 🔔</Text>
-                ),
-            },
-          ]}
-        />
-
-        <Divider />
-        <Button danger onClick={onLogout}>
-          Chiqish
-        </Button>
-      </Card>
-    </div>
+      </div>
+    </section>
   );
 }
 

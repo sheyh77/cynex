@@ -62,7 +62,7 @@ function Projects() {
                   maqsadida yaratildi. Siz bu dasturda bolalar uchun 3 tilda
                   qiziqarli multfilmlar va o'yinlarni korinishingiz mumkin.
                 </p>
-                <Link to="https://kidstv-admin.vercel.app/">
+                <Link to="https://kids-tv-eta.vercel.app/">
                   <button className="projects-card-item-desc-btn">
                     Ko'rish
                   </button>

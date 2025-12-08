@@ -43,7 +43,7 @@ function Header({ onStartClick, notifications = [] }) {
       <div className="cantainer">
         <div className="header-wrap">
           <div className="header-logo">
-            <a href="#asosiy">cynex</a>
+            <Link to="/">cynex</Link>
           </div>
 
           <nav className="header-nav">
