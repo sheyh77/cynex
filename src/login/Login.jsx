@@ -1,29 +1,51 @@
-import { Lock, LogIn, User } from 'lucide-react';
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { db } from "../../firebaseConfig";
+import { Lock, LogIn, User } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { db } from "../../firebaseConfig";
 
 function Login({ setIsAuth, setUser }) {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const auth = getAuth();
+
+  // Refreshdan keyin localStoragedagi userni o'qish
+  useEffect(() => {
+    const storedUser = localStorage.getItem("currentUser");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+      setIsAuth(true);
+      navigate("/", { replace: true });
+    }
+  }, [navigate, setUser, setIsAuth]);
 
   const handleLogin = async () => {
-    if (!username.trim() || !password) {
-      alert("Username va parolni to'ldiring");
+    if (!email.trim() || !password) {
+      alert("Email va parolni to'ldiring");
       return;
     }
 
     setLoading(true);
 
     try {
-      const docRef = doc(db, "users", username.trim());
+      // 1. Firebase Auth orqali login
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email.trim(),
+        password
+      );
+
+      const uid = userCredential.user.uid;
+
+      // 2. Firestore dan qo'shimcha user ma'lumotlarini olish
+      const docRef = doc(db, "users", uid);
       const docSnap = await getDoc(docRef);
 
       if (!docSnap.exists()) {
-        alert("Foydalanuvchi topilmadi!");
+        alert("Foydalanuvchi ma'lumotlari topilmadi!");
         setLoading(false);
         return;
       }
@@ -36,36 +58,32 @@ function Login({ setIsAuth, setUser }) {
         return;
       }
 
-      if (userData.password !== password) {
-        alert("Parol noto‘g‘ri!");
-        setLoading(false);
-        return;
-      }
-
+      // lastLogin va online holatni yangilash
       await updateDoc(docRef, {
         lastLogin: new Date().toISOString(),
         online: true
       });
 
       const currentUser = {
-        id: docSnap.id,
-        uid: docSnap.id,
+        uid: uid,
+        email: userCredential.user.email,
         username: userData.username,
         name: userData.name || "",
         role: userData.role || "user",
-        active: userData.active
+        active: userData.active,
       };
 
+      // localStorage ga saqlash (refreshdan keyin ham ishlaydi)
       localStorage.setItem("currentUser", JSON.stringify(currentUser));
-      setIsAuth(true);
       setUser(currentUser);
+      setIsAuth(true);
 
       alert("Login muvaffaqiyatli!");
       navigate("/", { replace: true });
 
     } catch (err) {
       console.error(err);
-      alert("Xatolik: " + err.message);
+      alert("Login xatoligi: " + err.message);
     } finally {
       setLoading(false);
     }
@@ -78,10 +96,10 @@ function Login({ setIsAuth, setUser }) {
         <div className="login-form-inputs">
           <User />
           <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Username"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
           />
         </div>
         <div className="login-form-inputs">

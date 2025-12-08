@@ -1,30 +1,28 @@
+// src/pages/Register.jsx
 import React, { useState } from "react";
-import { db } from "../../firebaseConfig";
-import { setDoc, doc, getDoc } from "firebase/firestore";
+import { auth, db } from "../../firebaseConfig";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
 import { useNavigate, Link } from "react-router-dom";
 
-const Register = ({ setIsAuth, setUser }) => {
+export default function Register({ setIsAuth, setUser }) {
   const [formData, setFormData] = useState({
     name: "",
-    username: "",
+    email: "",
     password: "",
   });
-  const [usernameError, setUsernameError] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    if (e.target.name === "username") setUsernameError(false);
   };
 
-  const registerUser = async () => {
-    const name = formData.name.trim();
-    const username = formData.username.trim();
-    const password = formData.password;
+  const handleRegister = async () => {
+    const { name, email, password } = formData;
 
-    if (!name || !username || !password) {
+    if (!name || !email || !password) {
       alert("Iltimos barcha maydonlarni to‘ldiring!");
       return;
     }
@@ -32,37 +30,29 @@ const Register = ({ setIsAuth, setUser }) => {
     setLoading(true);
 
     try {
-      const userRef = doc(db, "users", username);
-      const userSnap = await getDoc(userRef);
+      // Firebase Auth orqali foydalanuvchi yaratish
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
-      if (userSnap.exists()) {
-        setUsernameError(true);
-        setLoading(false);
-        return;
-      }
-
-      const newUser = {
+      // Firestore-ga qo‘shimcha ma’lumot saqlash
+      await setDoc(doc(db, "users", user.uid), {
         name,
-        username,
-        password,
-        createdAt: new Date().toISOString(),
-        active: true,
+        email,
+        uid: user.uid,
         role: "user",
-        lastLogin: new Date().toISOString(),
-        online: true
-      };
-
-      await setDoc(userRef, newUser);
+        active: true,
+        createdAt: new Date().toISOString(),
+      });
 
       const currentUser = {
-        id: username,
-        uid: username,
-        username: newUser.username,
-        name: newUser.name,
-        role: newUser.role,
-        active: newUser.active
+        uid: user.uid,
+        name,
+        email,
+        role: "user",
+        active: true,
       };
 
+      // LocalStorage ga saqlash
       localStorage.setItem("currentUser", JSON.stringify(currentUser));
       setIsAuth(true);
       setUser(currentUser);
@@ -72,61 +62,42 @@ const Register = ({ setIsAuth, setUser }) => {
 
     } catch (err) {
       console.error(err);
-      alert("Xatolik yuz berdi: " + err.message);
+      alert("Xatolik: " + err.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <section className="register">
-      <form className="register-form" onSubmit={(e) => e.preventDefault()}>
-        <h1 className="register-title">cynex</h1>
-
-        <input
-          type="text"
-          name="name"
-          placeholder="Ismingiz"
-          value={formData.name}
-          onChange={handleChange}
-          required
-        />
-
-        <input
-          type="text"
-          name="username"
-          placeholder="Username"
-          value={formData.username}
-          onChange={handleChange}
-          className={usernameError ? "error" : ""}
-          required
-        />
-        {usernameError && <p style={{ color: "red" }}>Username mavjud!</p>}
-
-        <input
-          type="password"
-          name="password"
-          placeholder="Parol"
-          value={formData.password}
-          onChange={handleChange}
-          required
-        />
-
-        <button
-          type="button"
-          onClick={registerUser}
-          className="register-button"
-          disabled={loading}
-        >
-          {loading ? "Yuklanmoqda..." : "Ro'yxatdan o'tish"}
-        </button>
-
-        <p className="register-in">
-          Hisobingiz bormi? <Link to="/login">Kirish</Link>
-        </p>
-      </form>
-    </section>
+    <div className="register-container">
+      <h2>Ro‘yxatdan o‘tish</h2>
+      <input
+        type="text"
+        name="name"
+        placeholder="Ismingiz"
+        value={formData.name}
+        onChange={handleChange}
+      />
+      <input
+        type="email"
+        name="email"
+        placeholder="Email"
+        value={formData.email}
+        onChange={handleChange}
+      />
+      <input
+        type="password"
+        name="password"
+        placeholder="Parol"
+        value={formData.password}
+        onChange={handleChange}
+      />
+      <button onClick={handleRegister} disabled={loading}>
+        {loading ? "Yuklanmoqda..." : "Ro'yxatdan o'tish"}
+      </button>
+      <p>
+        Hisobingiz bormi? <Link to="/login">Kirish</Link>
+      </p>
+    </div>
   );
-};
-
-export default Register;
+}

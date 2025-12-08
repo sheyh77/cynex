@@ -1,8 +1,12 @@
-// ... boshqa importlar bir xil qoladi
+import React, { useEffect, useState } from "react";
+import { Avatar, Button, Card, Divider, Form, Input, List, Spin, Tabs, Upload, Typography, message } from "antd";
+import { UserOutlined, UploadOutlined, EditOutlined } from "@ant-design/icons";
 import { db, storage } from "../../firebaseConfig";
-import { doc, getDoc, updateDoc } from "firebase/firestore"; // 🔴 faqat kerakli qismlar
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useLocation } from "react-router-dom";
+
+const { Title, Text } = Typography;
 
 function Profile({ currentUser, onLogout }) {
   const location = useLocation();
@@ -18,8 +22,6 @@ function Profile({ currentUser, onLogout }) {
   });
   const [orders, setOrders] = useState([]);
   const [activeTab, setActiveTab] = useState("1");
-
-  // 🔴 NOTIFICATION USEEFFECT olib tashlandi!
 
   // User ma'lumotlarini olish
   const fetchUserData = async () => {
