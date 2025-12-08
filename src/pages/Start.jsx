@@ -1,6 +1,15 @@
 import React, { useState } from "react";
-import { Modal, Button, Typography, Space, message, Input, DatePicker, Form } from "antd";
-import { db } from "../../firebaseConfig"; 
+import {
+  Modal,
+  Button,
+  Typography,
+  Space,
+  message,
+  Input,
+  DatePicker,
+  Form,
+} from "antd";
+import { db } from "../../firebaseConfig";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import "antd/dist/reset.css";
 
@@ -23,11 +32,13 @@ function Start({ visible, setVisible, currentUser }) {
 
       // Firebase ga yangi so'rov qo'shish
       await addDoc(collection(db, "courseRequests"), {
-        userId: currentUser.id,
+        userId: currentUser.uid,
         username: currentUser.username,
         name: values.name,
         surname: values.surname,
-        birthDate: values.birthDate ? values.birthDate.format("YYYY-MM-DD") : null,
+        birthDate: values.birthDate
+          ? values.birthDate.format("YYYY-MM-DD")
+          : null,
         phone: values.phone,
         createdAt: serverTimestamp(),
         status: "pending",
@@ -61,7 +72,8 @@ function Start({ visible, setVisible, currentUser }) {
       <Typography>
         <Title level={3}>Salom! Kursimizga xush kelibsiz!</Title>
         <Paragraph>
-          Bu yerda siz React, JavaScript va boshqa zamonaviy web texnologiyalarni o‘rganishingiz mumkin.
+          Bu yerda siz React, JavaScript va boshqa zamonaviy web
+          texnologiyalarni o‘rganishingiz mumkin.
         </Paragraph>
         <Paragraph>
           Ro‘yxatdan o‘tish uchun quyidagi ma’lumotlarni kiriting:
@@ -89,7 +101,9 @@ function Start({ visible, setVisible, currentUser }) {
         <Form.Item
           name="birthDate"
           label="Tug‘ilgan sana"
-          rules={[{ required: true, message: "Tug‘ilgan sanangizni kiriting!" }]}
+          rules={[
+            { required: true, message: "Tug‘ilgan sanangizni kiriting!" },
+          ]}
         >
           <DatePicker style={{ width: "100%" }} />
         </Form.Item>
@@ -97,14 +111,22 @@ function Start({ visible, setVisible, currentUser }) {
         <Form.Item
           name="phone"
           label="Telefon raqami"
-          rules={[{ required: true, message: "Telefon raqamingizni kiriting!" }]}
+          rules={[
+            { required: true, message: "Telefon raqamingizni kiriting!" },
+          ]}
         >
           <Input placeholder="+998901234567" />
         </Form.Item>
       </Form>
 
       {/* Tugmalar */}
-      <Space style={{ marginTop: 20, display: "flex", justifyContent: "space-between" }}>
+      <Space
+        style={{
+          marginTop: 20,
+          display: "flex",
+          justifyContent: "space-between",
+        }}
+      >
         <Button type="primary" loading={loading} onClick={handleJoinCourse}>
           Kursga qo‘shilish
         </Button>

@@ -9,10 +9,11 @@ function Login({ setIsAuth, setUser }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
   const auth = getAuth();
 
-  // Refreshdan keyin localStoragedagi userni o'qish
+  // LocalStoragedan foydalanuvchini o‘qish
   useEffect(() => {
     const storedUser = localStorage.getItem("currentUser");
     if (storedUser) {
@@ -20,52 +21,54 @@ function Login({ setIsAuth, setUser }) {
       setIsAuth(true);
       navigate("/", { replace: true });
     }
-  }, [navigate, setUser, setIsAuth]);
+  }, []);
 
   const handleLogin = async () => {
-    if (!email.trim() || !password) {
-      alert("Email va parolni to'ldiring");
+    const cleanEmail = email.trim();
+
+    console.log("EMAIL:", cleanEmail); // 🔥 Debug uchun
+
+    if (!cleanEmail || !password) {
+      alert("Email va parolni to‘ldiring!");
       return;
     }
 
     setLoading(true);
 
     try {
-      // 1. Firebase Auth orqali login
+      // Firebase Auth
       const userCredential = await signInWithEmailAndPassword(
         auth,
-        email.trim(),
+        cleanEmail,
         password
       );
 
       const uid = userCredential.user.uid;
 
-      // 2. Firestore dan qo'shimcha user ma'lumotlarini olish
+      // Firestore dan user ma'lumotlarini olish
       const docRef = doc(db, "users", uid);
       const docSnap = await getDoc(docRef);
 
       if (!docSnap.exists()) {
-        alert("Foydalanuvchi ma'lumotlari topilmadi!");
-        setLoading(false);
+        alert("Foydalanuvchi topilmadi!");
         return;
       }
 
       const userData = docSnap.data();
 
       if (!userData.active) {
-        alert("Siz bloklangansiz! Admin bilan bog'laning.");
-        setLoading(false);
+        alert("Siz bloklangansiz!");
         return;
       }
 
-      // lastLogin va online holatni yangilash
+      // Login vaqtini update qilish
       await updateDoc(docRef, {
         lastLogin: new Date().toISOString(),
-        online: true
+        online: true,
       });
 
       const currentUser = {
-        uid: uid,
+        uid,
         email: userCredential.user.email,
         username: userData.username,
         name: userData.name || "",
@@ -73,17 +76,23 @@ function Login({ setIsAuth, setUser }) {
         active: userData.active,
       };
 
-      // localStorage ga saqlash (refreshdan keyin ham ishlaydi)
       localStorage.setItem("currentUser", JSON.stringify(currentUser));
       setUser(currentUser);
       setIsAuth(true);
 
-      alert("Login muvaffaqiyatli!");
       navigate("/", { replace: true });
-
     } catch (err) {
-      console.error(err);
-      alert("Login xatoligi: " + err.message);
+      console.error("FIREBASE LOGIN ERROR:", err);
+
+      if (err.code === "auth/invalid-email") {
+        alert("Email formati noto‘g‘ri! Masalan: example@gmail.com");
+      } else if (err.code === "auth/user-not-found") {
+        alert("Bunday foydalanuvchi mavjud emas!");
+      } else if (err.code === "auth/wrong-password") {
+        alert("Parol noto‘g‘ri!");
+      } else {
+        alert("Login xatoligi: " + err.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -91,26 +100,31 @@ function Login({ setIsAuth, setUser }) {
 
   return (
     <section className="login">
-      <h1 className="login-title">cynex</h1>
+      <h1 className="login-title">cynex Login</h1>
       <div className="login-form">
+
+        <label htmlFor="">Email</label>
         <div className="login-form-inputs">
           <User />
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email"
+            placeholder="your@example.com"
           />
         </div>
+
+        <label htmlFor="">Password</label>
         <div className="login-form-inputs">
           <Lock />
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Parol"
+            placeholder="******"
           />
         </div>
+
         <button
           className="login-form-in"
           type="button"
@@ -120,6 +134,7 @@ function Login({ setIsAuth, setUser }) {
           {loading ? "Loading..." : "Kirish"}
           {!loading && <LogIn />}
         </button>
+
         <p className="login-form-up">
           Akkauntingiz yo‘qmi? <Link to="/register">Register</Link>
         </p>

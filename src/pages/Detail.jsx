@@ -10,8 +10,8 @@ function Detail({ visible, setVisible }) {
       title: "Start",
       desc: [
         "1-chi 5 ta dars bepul",
-        "Keyingi darsliklarning har biri 20 000 so‘m",
-        "Oylik to‘lov varianti: $20",
+        "Keyingi darsliklarning har biri 70 000 so‘m",
+        "Oylik to‘lov varianti: $50",
       ],
     },
     {
@@ -19,9 +19,9 @@ function Detail({ visible, setVisible }) {
       desc: [
         "24/7 istalgan vaqtda shaxsiy mentorlik",
         "Darslar guruh bo‘lib emas, individual tarzda",
-        "Oylik: $30",
-        "3 oylik: $70",
-        "6 oylik: $150",
+        "Oylik: $100",
+        "3 oylik: $270",
+        "6 oylik: $550",
       ],
     },
   ];

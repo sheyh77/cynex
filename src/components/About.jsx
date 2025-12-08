@@ -1,5 +1,6 @@
 import { CircleCheck, Clock, Users } from 'lucide-react';
 import React from 'react';
+import Logo from "/images/cynexLogo.png";
 
 function About() {
   return (
@@ -7,7 +8,7 @@ function About() {
       <div className="cantainer">
         <div className="about-wrap">
           <div className="about-left-image">
-            {/* <img src={} alt="" /> */}
+            <img src={Logo} alt="" />
           </div>
           <div className="about-right-desc">
             <h1 className="about-title">Biz haqimizda</h1>

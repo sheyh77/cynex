@@ -1,5 +1,6 @@
 .about {
     padding-top: 100px;
+    margin-bottom: 50px;
 
     &-wrap {
         display: flex;
@@ -27,9 +28,26 @@
         border-radius: 30px;
         overflow: hidden;
 
+        img {
+            width: 100%;
+            height: 100%;
+        }
+
+        @media screen and (max-width: 1124px){
+            height: 500px;
+        }
+
+        @media screen and (max-width: 940px){
+            height: 400px;
+        }
+
         @media screen and (max-width: 875px){
             width: 100%;
             height: 400px;
+        }
+
+        @media screen and (max-width: 550px){
+            height: 300px;
         }
     }
 

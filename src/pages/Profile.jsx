@@ -1,15 +1,35 @@
+// src/pages/Profile.jsx
 import React, { useEffect, useState } from "react";
-import { Avatar, Button, Card, Divider, Form, Input, List, Spin, Tabs, Upload, Typography, message } from "antd";
+import {
+  Avatar,
+  Button,
+  Card,
+  Divider,
+  Form,
+  Input,
+  List,
+  Spin,
+  Tabs,
+  Upload,
+  Typography,
+  message,
+} from "antd";
 import { UserOutlined, UploadOutlined, EditOutlined } from "@ant-design/icons";
 import { db, storage } from "../../firebaseConfig";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  collection,
+  query,
+  orderBy,
+  onSnapshot,
+} from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { useLocation } from "react-router-dom";
 
 const { Title, Text } = Typography;
 
 function Profile({ currentUser, onLogout }) {
-  const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [userData, setUserData] = useState({
@@ -21,29 +41,19 @@ function Profile({ currentUser, onLogout }) {
     orders: [],
   });
   const [orders, setOrders] = useState([]);
+  const [announcements, setAnnouncements] = useState([]);
   const [activeTab, setActiveTab] = useState("1");
 
-  // User ma'lumotlarini olish
+  // Foydalanuvchi ma'lumotlarini olish
   const fetchUserData = async () => {
     if (!currentUser?.uid) return;
     try {
       const userRef = doc(db, "users", currentUser.uid);
       const userSnap = await getDoc(userRef);
-
       if (userSnap.exists()) {
         const data = userSnap.data();
         setUserData(data);
         setOrders((data.orders || []).filter((order) => order.accepted));
-      } else {
-        setUserData({
-          name: "Foydalanuvchi",
-          username: "",
-          email: "",
-          phone: "",
-          avatar: null,
-          orders: [],
-        });
-        setOrders([]);
       }
     } catch (err) {
       console.error(err);
@@ -53,11 +63,17 @@ function Profile({ currentUser, onLogout }) {
     }
   };
 
+  // Admin xabarlarini real-time olish
   useEffect(() => {
-    if (location.state?.activeTab) {
-      setActiveTab(location.state.activeTab);
-    }
-  }, [location.state]);
+    const q = query(collection(db, "notifications"), orderBy("createdAt", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setAnnouncements(
+        data.filter((item) => item.userId === "all" || item.userId === currentUser?.uid)
+      );
+    });
+    return () => unsubscribe();
+  }, [currentUser]);
 
   useEffect(() => {
     fetchUserData();
@@ -103,7 +119,10 @@ function Profile({ currentUser, onLogout }) {
 
   return (
     <div style={{ maxWidth: 900, margin: "0 auto", padding: "20px" }}>
-      <Card bordered style={{ borderRadius: 20, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
+      <Card
+        bordered
+        style={{ borderRadius: 20, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+      >
         {/* Profil ma'lumotlari */}
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
           <Avatar
@@ -135,23 +154,24 @@ function Profile({ currentUser, onLogout }) {
             {
               key: "1",
               label: "Kurslar tarixi",
-              children: orders.length > 0 ? (
-                <List
-                  itemLayout="horizontal"
-                  dataSource={orders}
-                  renderItem={(order) => (
-                    <List.Item>
-                      <List.Item.Meta
-                        title={order.title}
-                        description={`Sana: ${order.date}`}
-                      />
-                      <Text>{order.status}</Text>
-                    </List.Item>
-                  )}
-                />
-              ) : (
-                <Text>Hozircha tasdiqlangan kurslar yo‘q.</Text>
-              ),
+              children:
+                orders.length > 0 ? (
+                  <List
+                    itemLayout="horizontal"
+                    dataSource={orders}
+                    renderItem={(order) => (
+                      <List.Item>
+                        <List.Item.Meta
+                          title={order.title}
+                          description={`Sana: ${order.date}`}
+                        />
+                        <Text>{order.status}</Text>
+                      </List.Item>
+                    )}
+                  />
+                ) : (
+                  <Text>Hozircha tasdiqlangan kurslar yo‘q.</Text>
+                ),
             },
             {
               key: "2",
@@ -176,16 +196,26 @@ function Profile({ currentUser, onLogout }) {
                     <Input />
                   </Form.Item>
                   <div style={{ display: "flex", gap: 10 }}>
-                    <Button type="primary" htmlType="submit">Saqlash</Button>
+                    <Button type="primary" htmlType="submit">
+                      Saqlash
+                    </Button>
                     <Button onClick={() => setEditing(false)}>Bekor qilish</Button>
                   </div>
                 </Form>
               ) : (
                 <div>
-                  <p><strong>Ism:</strong> {userData?.name}</p>
-                  <p><strong>Username:</strong> @{userData?.username}</p>
-                  <p><strong>Email:</strong> {userData?.email}</p>
-                  <p><strong>Telefon:</strong> {userData?.phone}</p>
+                  <p>
+                    <strong>Ism:</strong> {userData?.name}
+                  </p>
+                  <p>
+                    <strong>Username:</strong> @{userData?.username}
+                  </p>
+                  <p>
+                    <strong>Email:</strong> {userData?.email}
+                  </p>
+                  <p>
+                    <strong>Telefon:</strong> {userData?.phone}
+                  </p>
                   <Button
                     type="primary"
                     icon={<EditOutlined />}
@@ -199,13 +229,36 @@ function Profile({ currentUser, onLogout }) {
             {
               key: "3",
               label: "Xabarlar",
-              children: <Text>Hamma xabarlar App darajasida tinglanmoqda 🔔</Text>,
+              children:
+                announcements.length > 0 ? (
+                  <List
+                    itemLayout="horizontal"
+                    dataSource={announcements}
+                    renderItem={(item) => (
+                      <List.Item>
+                        <List.Item.Meta
+                          title={item.title}
+                          description={item.text || item.message}
+                        />
+                        <Text type="secondary">
+                          {item.createdAt?.toDate
+                            ? item.createdAt.toDate().toLocaleString()
+                            : ""}
+                        </Text>
+                      </List.Item>
+                    )}
+                  />
+                ) : (
+                  <Text>Hozircha xabar yo‘q 🔔</Text>
+                ),
             },
           ]}
         />
 
         <Divider />
-        <Button danger onClick={onLogout}>Chiqish</Button>
+        <Button danger onClick={onLogout}>
+          Chiqish
+        </Button>
       </Card>
     </div>
   );
