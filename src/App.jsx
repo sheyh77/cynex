@@ -24,7 +24,6 @@ function App() {
   const [user, setUser] = useState(null);
   const [startVisible, setStartVisible] = useState(false);
 
-  // ✅ Refreshdan keyin userni saqlash
   useEffect(() => {
     try {
       const storedUser = localStorage.getItem("currentUser");
@@ -43,13 +42,18 @@ function App() {
     }
   }, []);
 
+  // ❗ ASOSIY O‘ZGARISH: Endi faqat /profile ga kirganda chek qilinadi
+  const PrivateRoute = ({ children }) => {
+    return isAuth ? children : <Navigate to="/login" replace />;
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("currentUser");
     setIsAuth(false);
     setUser(null);
   };
 
-  // ✅ Firestore bilan real-time monitoring
+  // Firestore monitoring
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("currentUser"));
     if (!storedUser) return;
@@ -66,39 +70,35 @@ function App() {
     return () => unsub();
   }, []);
 
-  // FCM hook
   useFCM(user);
 
   return (
     <>
       <Routes>
-        <Route
-          path="/login"
-          element={<Login setIsAuth={setIsAuth} setUser={setUser} />}
-        />
-        <Route
-          path="/register"
-          element={<Register setIsAuth={setIsAuth} setUser={setUser} />}
-        />
+        {/* Login & Register */}
+        <Route path="/login" element={<Login setIsAuth={setIsAuth} setUser={setUser} />} />
+        <Route path="/register" element={<Register setIsAuth={setIsAuth} setUser={setUser} />} />
+
+        {/* 👇 ENDILIKDA asosiy sahifa hamma uchun ochiq */}
         <Route
           path="/"
           element={
-            <PrivateRoute isAuth={isAuth}>
-              <>
-                <Header onStartClick={() => setStartVisible(true)} currentUser={user} />
-                <Banner onStartClick={() => setStartVisible(true)} currentUser={user} />
-                <Projects />
-                <Features />
-                <About />
-                <Contact />
-              </>
-            </PrivateRoute>
+            <>
+              <Header onStartClick={() => setStartVisible(true)} currentUser={user} />
+              <Banner onStartClick={() => setStartVisible(true)} currentUser={user} />
+              <Projects />
+              <Features />
+              <About />
+              <Contact />
+            </>
           }
         />
+
+        {/* 👇 faqat Profile sahifasi himoyalangan */}
         <Route
           path="/profile"
           element={
-            <PrivateRoute isAuth={isAuth}>
+            <PrivateRoute>
               <Profile currentUser={user} onLogout={handleLogout} />
             </PrivateRoute>
           }
@@ -111,5 +111,6 @@ function App() {
     </>
   );
 }
+
 
 export default App;
