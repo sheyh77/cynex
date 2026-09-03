@@ -1,126 +1,170 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import {
+  ArrowUpRight,
+  Code2,
+  ExternalLink,
+  Sparkles,
+} from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 function Projects() {
+  const { t } = useTranslation();
+
+  const projects = [
+    {
+      number: "01",
+      category: t("projects.nexusCategory"),
+      title: t("projects.nexusTitle"),
+      description: t("projects.nexusDescription"),
+
+      // Nexus Finance uchun maxsus tayyorlangan rasm
+      image: "/images/nexus-finance.png",
+
+      details: t("projects.nexusDetails"),
+
+      technologies: [
+        "React",
+        "TypeScript",
+        "Node.js",
+        "PostgreSQL",
+        "Prisma",
+      ],
+
+      link: "https://nexus.cynex.space/",
+    },
+  ];
+
   return (
     <section id="loyihalar" className="projects">
-      <div className="cantainer">
+      <div className="projects-bg-grid"></div>
+
+      <div className="projects-glow projects-glow-1"></div>
+      <div className="projects-glow projects-glow-2"></div>
+
+      <div className="container">
         <div className="projects-wrap">
-          <div className="projects-desc">
-            <h1 className="projects-desc-title">
-              Har bir loyihaga alohida mehr beramiz
-            </h1>
-            <p className="projects-desc-sub">
-              Biz jamiyatga va hamkorlarimizga o‘z maqsadlariga erishishga,
-              qulaylikni ta’minlashga va hayotni yangi imkoniyatlar bilan
-              to‘ldirishga yordam beradigan noyob IT yechimlarni yaratamiz.
+
+          {/* HEADER */}
+          <div className="projects-header">
+            <div className="projects-label">
+              <Sparkles size={15} />
+              <span>{t("projects.label")}</span>
+            </div>
+
+            <h2 className="projects-title">
+              {t("projects.titlePart1")}
+              <span> {t("projects.titleHighlight")} </span>
+              {t("projects.titlePart2")}
+            </h2>
+
+            <p className="projects-subtitle">
+              {t("projects.subtitle")}
             </p>
           </div>
-          <div className="projects-card">
-            <div className="projects-card-item">
-              <div className="projects-card-item-desc">
-                <h1 className="projects-card-item-desc-title">
-                  Kafe va restoran uchun
-                </h1>
-                <p className="projects-card-item-desc-sub">
-                  Bu turdagi saytlarda online buyurtmalar olishingiz va
-                  biznesingizni to'liq aftomatlashtirasiz. Buyurtmalarni
-                  boshqarasiz qancha buyurtma kelyabdi qanchasi bekor qilindi va
-                  qabul qilinganligi haqda kunlik axbarot olib borasiz.
-                </p>
-                <Link to="https://cofeshop-lk6b.vercel.app/">
-                  <button className="projects-card-item-desc-btn">
-                    Ko'rish
-                  </button>
-                </Link>
-              </div>
-              <div className="projects-card-item-about">
-                <div className="projects-card-item-about-img">
-                  <img
-                    src="https://roomester.ru/wp-content/uploads/2018/04/dizajn-kafe.jpg"
-                    alt=""
-                  />
+
+          {/* PROJECT */}
+          <div className="projects-list">
+            {projects.map((project) => (
+              <article
+                className="project-card"
+                key={project.number}
+              >
+                {/* IMAGE */}
+                <div className="project-visual">
+                  <div className="project-number">
+                    {project.number}
+                  </div>
+
+                  <div className="project-image-wrap">
+                    <img
+                      src={project.image}
+                      alt={project.title}
+                    />
+
+                    <div className="project-image-overlay"></div>
+
+                    <div className="project-image-top">
+                      <div className="project-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                      </div>
+
+                      <span>NEXUS FINANCE</span>
+                    </div>
+
+                    <div className="project-image-icon">
+                      <Code2 size={20} />
+                    </div>
+                  </div>
                 </div>
-                <div className="projects-card-item-about-desc">
-                  <p className="projects-card-item-about-desc-title">
-                    Batafsil
+
+                {/* CONTENT */}
+                <div className="project-content">
+                  <div className="project-category">
+                    <span></span>
+                    {project.category}
+                  </div>
+
+                  <h3 className="project-name">
+                    {project.title}
+                  </h3>
+
+                  <p className="project-description">
+                    {project.description}
                   </p>
-                  <p className="projects-card-item-about-desc-sub">
-                    Ushbu web dastur yaratish davomida TypeScript, React,
-                    JavaScript, SASS, Antd va iconkalar uchun lucide-react dan
-                    foydalanildi. Backend to'liq TypeScriptda tuzilgan va api
-                    lar frontend bilan ulangan.
-                  </p>
+
+                  {/* Technologies */}
+                  <div className="project-tech">
+                    {project.technologies.map((tech) => (
+                      <span key={tech}>{tech}</span>
+                    ))}
+                  </div>
+
+                  {/* Details */}
+                  <div className="project-details">
+                    <div className="project-details-heading">
+                      <span>{t("projects.details")}</span>
+                    </div>
+
+                    <p>{project.details}</p>
+                  </div>
+
+                  {/* Button */}
+                  <a
+                    href={project.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="project-button"
+                  >
+                    <span>{t("projects.view")}</span>
+
+                    <span className="project-button-icon">
+                      <ArrowUpRight size={18} />
+                    </span>
+                  </a>
                 </div>
-              </div>
+              </article>
+            ))}
+          </div>
+
+          {/* BOTTOM */}
+          <div className="projects-bottom">
+            <div>
+              <span className="projects-bottom-small">
+                {t("projects.nextProject")}
+              </span>
+
+              <strong>
+                {t("projects.yourIdea")}
+              </strong>
             </div>
-            <div className="projects-card-item">
-              <div className="projects-card-item-desc">
-                <h1 className="projects-card-item-desc-title">Bolalar uchun</h1>
-                <p className="projects-card-item-desc-sub">
-                  Ushbu web dastur yosh bolalarni turli hil videolardan saqlash
-                  maqsadida yaratildi. Siz bu dasturda bolalar uchun 3 tilda
-                  qiziqarli multfilmlar va o'yinlarni korinishingiz mumkin.
-                </p>
-                <Link to="https://kids-tv-eta.vercel.app/">
-                  <button className="projects-card-item-desc-btn">
-                    Ko'rish
-                  </button>
-                </Link>
-              </div>
-              <div className="projects-card-item-about">
-                <div className="projects-card-item-about-img">
-                  <img
-                    src="https://www.shutterstock.com/image-photo/newborn-baby-girl-plays-her-600nw-2465282899.jpg"
-                    alt=""
-                  />
-                </div>
-                <div className="projects-card-item-about-desc">
-                  <p className="projects-card-item-about-desc-title">
-                    Batafsil
-                  </p>
-                  <p className="projects-card-item-about-desc-sub">
-                    Dasturni yaratishda React, JavaScript, SASS, Antd va backend
-                    da pythondan foydalanildi. Yosh bolalarni ahloqsiz video va
-                    reklamadan saqlash bilim berish maqsadida yaratildi.
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="projects-card-item">
-              <div className="projects-card-item-desc">
-                <h1 className="projects-card-item-desc-title">Hisobot</h1>
-                <p className="projects-card-item-desc-sub">
-                  Oylik, kunlik va haftalik harajatlaringizni hisoblashda sizga
-                  katta yordam beruvchi dastur.
-                </p>
-                <Link to="https://hisobot-umber.vercel.app/#/login">
-                  <button className="projects-card-item-desc-btn">
-                    Ko'rish
-                  </button>
-                </Link>
-              </div>
-              <div className="projects-card-item-about">
-                <div className="projects-card-item-about-img">
-                  <img
-                    src="https://hisobot.com/assets/img/hisobot.jpg"
-                    alt=""
-                  />
-                </div>
-                <div className="projects-card-item-about-desc">
-                  <p className="projects-card-item-about-desc-title">
-                    Batafsil
-                  </p>
-                  <p className="projects-card-item-about-desc-sub">
-                    Hisobot dasturi juda mukammal va aqlli ravishda yaratilgan
-                    sizning barcha kirim-chiqimlaringiz hisoblab bera oladi.
-                    Dastur React da tuzilgan Backend esa python da mukammal
-                    qilib yaratilgan..
-                  </p>
-                </div>
-              </div>
+
+            <div className="projects-bottom-icon">
+              <ExternalLink size={19} />
             </div>
           </div>
+
         </div>
       </div>
     </section>
