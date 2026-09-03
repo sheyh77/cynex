@@ -37,7 +37,7 @@ function Contact() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:5000/send-message", {
+      const res = await fetch("https://cynex-n53x.onrender.com/send-message", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
