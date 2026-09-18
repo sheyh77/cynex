@@ -41,6 +41,11 @@ function App() {
   const notificationAudioRef = useRef(null);
 
   useEffect(() => {
+    if (!user?.uid) {
+      notificationAudioRef.current = null;
+      return undefined;
+    }
+
     notificationAudioRef.current = new Audio("/sounds/notification.mp3");
 
     const unlockAudio = () => {
@@ -70,7 +75,7 @@ function App() {
       document.removeEventListener("pointerdown", unlockAudio);
       document.removeEventListener("keydown", unlockAudio);
     };
-  }, []);
+  }, [user?.uid]);
 
   useEffect(() => {
     const storedUser = getStoredActiveUser();
