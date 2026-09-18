@@ -1,7 +1,4 @@
 import { useEffect, useRef } from "react";
-import { messaging, db } from "../../firebaseConfig";
-import { getToken, onMessage } from "firebase/messaging";
-import { doc, setDoc } from "firebase/firestore";
 
 export default function useFCM(user) {
   const notificationAudio = useRef(new Audio("/sounds/notification.mp3"));
@@ -10,12 +7,25 @@ export default function useFCM(user) {
   useEffect(() => {
     if (!user?.uid) return;
 
+    let unsubscribe = () => {};
+    let cancelled = false;
+
     // Browser notification permission
     const requestPermissionAndSaveToken = async () => {
+      if (!("Notification" in window)) return;
+
       if (!tokenSavedRef.current) {
         const permission = await Notification.requestPermission();
         if (permission === "granted") {
           try {
+            const [{ getToken }, { doc, setDoc }, { messaging, db }] = await Promise.all([
+              import("firebase/messaging"),
+              import("firebase/firestore"),
+              import("../../firebaseConfig"),
+            ]);
+
+            if (cancelled) return;
+
             const token = await getToken(messaging, {
               vapidKey:
                 "BLwaWokksQheSN9I_lv73x3LZ2ryvD1C5Mk0t9ICKcWToThGqkyjyHifRX3EUwKHlAVPRLBuVMr8o9BdxqwWT1o",
@@ -34,11 +44,29 @@ export default function useFCM(user) {
     requestPermissionAndSaveToken();
 
     // Real-time xabarlarni olish
-    const unsubscribe = onMessage(messaging, (payload) => {
-      console.log("Xabar keldi:", payload);
-      notificationAudio.current.play().catch((e) => console.log(e));
-    });
+    const subscribeToForegroundMessages = async () => {
+      try {
+        const [{ onMessage }, { messaging }] = await Promise.all([
+          import("firebase/messaging"),
+          import("../../firebaseConfig"),
+        ]);
 
-    return () => unsubscribe();
+        if (cancelled) return;
+
+        unsubscribe = onMessage(messaging, (payload) => {
+          console.log("Xabar keldi:", payload);
+          notificationAudio.current.play().catch((e) => console.log(e));
+        });
+      } catch (err) {
+        console.error("Foreground notification listener xatoligi:", err);
+      }
+    };
+
+    subscribeToForegroundMessages();
+
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
   }, [user]);
 }

@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   ArrowRight,
-  Play,
+  Building2,
   Sparkles,
   CheckCircle2,
   Zap,
@@ -10,14 +10,20 @@ import {
 import { useTranslation } from "react-i18next";
 
 import BannerImg from "/images/banner-img.png";
-import Start from "../pages/Start";
-import Detail from "../pages/Detail";
 
-function Banner({ currentUser }) {
+function Banner() {
   const { t } = useTranslation();
 
-  const [isStartVisible, setIsStartVisible] = useState(false);
-  const [isDetailVisible, setIsDetailVisible] = useState(false);
+  const scrollToSection = (id) => {
+    const section = document.getElementById(id);
+
+    if (section) {
+      section.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  };
 
   return (
     <section id="asosiy" className="banner">
@@ -67,21 +73,21 @@ function Banner({ currentUser }) {
             <div className="banner-buttons">
               <button
                 className="banner-primary"
-                onClick={() => setIsStartVisible(true)}
+                onClick={() => scrollToSection("bog'lanish")}
               >
-                <span>{t("hero.start")}</span>
+                <span>{t("hero.contactCta")}</span>
                 <ArrowRight size={19} />
               </button>
 
               <button
                 className="banner-secondary"
-                onClick={() => setIsDetailVisible(true)}
+                onClick={() => scrollToSection("biz haqimizda")}
               >
                 <span className="banner-play">
-                  <Play size={14} fill="currentColor" />
+                  <Building2 size={14} />
                 </span>
 
-                <span>{t("hero.details")}</span>
+                <span>{t("hero.companyCta")}</span>
               </button>
             </div>
 
@@ -147,17 +153,6 @@ function Banner({ currentUser }) {
         </div>
       </div>
 
-      {/* Modals */}
-      <Start
-        visible={isStartVisible}
-        setVisible={setIsStartVisible}
-        currentUser={currentUser}
-      />
-
-      <Detail
-        visible={isDetailVisible}
-        setVisible={setIsDetailVisible}
-      />
     </section>
   );
 }

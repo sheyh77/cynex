@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ArrowUpRight,
   Code2,
@@ -6,12 +6,15 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
+import { db } from "../../firebaseConfig";
 
 function Projects() {
   const { t } = useTranslation();
+  const [adminProjects, setAdminProjects] = useState([]);
 
-  const projects = [
-    {
+  const defaultProject = useMemo(
+    () => ({
       number: "01",
       category: t("projects.nexusCategory"),
       title: t("projects.nexusTitle"),
@@ -31,8 +34,30 @@ function Projects() {
       ],
 
       link: "https://nexus.cynex.space/",
-    },
-  ];
+      browserLabel: "NEXUS FINANCE",
+    }),
+    [t]
+  );
+
+  useEffect(() => {
+    const projectsQuery = query(collection(db, "projects"), orderBy("order", "asc"));
+
+    const unsubscribe = onSnapshot(projectsQuery, (snapshot) => {
+      setAdminProjects(
+        snapshot.docs
+          .map((document) => ({ id: document.id, ...document.data() }))
+          .filter((project) => project.active !== false)
+      );
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const projects = [defaultProject, ...adminProjects].map((project, index) => ({
+    ...project,
+    number: String(index + 1).padStart(2, "0"),
+    technologies: Array.isArray(project.technologies) ? project.technologies : [],
+  }));
 
   return (
     <section id="loyihalar" className="projects">
@@ -90,7 +115,7 @@ function Projects() {
                         <span></span>
                       </div>
 
-                      <span>NEXUS FINANCE</span>
+                      <span>{project.browserLabel || project.title}</span>
                     </div>
 
                     <div className="project-image-icon">

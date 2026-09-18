@@ -1,0 +1,222 @@
+.admin-page {
+  position: relative;
+  min-height: 100vh;
+  padding: 120px 0 70px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(57, 189, 255, 0.13), transparent 32%),
+    radial-gradient(circle at 85% 12%, rgba(124, 101, 255, 0.15), transparent 34%),
+    #030719;
+}
+
+.admin-bg-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 42px 42px;
+  pointer-events: none;
+}
+
+.admin-glow {
+  position: absolute;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  filter: blur(95px);
+  opacity: 0.18;
+  pointer-events: none;
+}
+
+.admin-glow-1 {
+  left: -120px;
+  top: 120px;
+  background: #3cc7ff;
+}
+
+.admin-glow-2 {
+  right: -120px;
+  bottom: 90px;
+  background: #7767ff;
+}
+
+.admin-container {
+  position: relative;
+  z-index: 2;
+  width: min(1180px, calc(100% - 42px));
+  margin: 0 auto;
+}
+
+.admin-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 22px;
+  margin-bottom: 22px;
+}
+
+.admin-label,
+.dynamic-label {
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 13px;
+  padding: 8px 11px;
+  border-radius: 999px;
+  color: #a8edff;
+  background: rgba(55, 195, 255, 0.09);
+  border: 1px solid rgba(89, 211, 255, 0.2);
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.admin-hero h1.ant-typography {
+  margin: 0 0 10px;
+  color: #fff;
+  font-size: 46px;
+  font-weight: 900;
+}
+
+.admin-hero .ant-typography {
+  max-width: 650px;
+  color: rgba(255, 255, 255, 0.58);
+}
+
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.admin-page .ant-card {
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24);
+}
+
+.admin-page .ant-card-body {
+  color: #fff;
+}
+
+.admin-stats .ant-card-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.admin-stats span {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.admin-stats strong {
+  color: #fff;
+  font-size: 30px;
+  font-weight: 900;
+}
+
+.admin-board-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.admin-board-head > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #fff;
+}
+
+.admin-board-head svg {
+  color: #9ee8ff;
+}
+
+.admin-board-head strong {
+  display: block;
+  font-size: 17px;
+}
+
+.admin-board-head span {
+  display: block;
+  margin-top: 3px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+}
+
+.admin-page .ant-tabs-tab,
+.admin-page .ant-table,
+.admin-page .ant-table-thead > tr > th,
+.admin-page .ant-table-tbody > tr > td {
+  color: rgba(255, 255, 255, 0.78);
+  background: transparent;
+}
+
+.admin-page .ant-table-thead > tr > th {
+  color: rgba(255, 255, 255, 0.5);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.admin-page .ant-table-tbody > tr > td {
+  border-bottom-color: rgba(255, 255, 255, 0.07);
+}
+
+.admin-table-title strong,
+.admin-page .ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #fff;
+}
+
+.admin-table-title span {
+  display: block;
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 11px;
+}
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 16px;
+}
+
+.admin-form-grid .ant-form-item:has(textarea) {
+  grid-column: 1 / -1;
+}
+
+.admin-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+@media (max-width: 780px) {
+  .admin-page {
+    padding-top: 100px;
+  }
+
+  .admin-container {
+    width: calc(100% - 24px);
+  }
+
+  .admin-hero {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .admin-hero h1.ant-typography {
+    font-size: 34px;
+  }
+
+  .admin-stats,
+  .admin-form-grid {
+    grid-template-columns: 1fr;
+  }
+}

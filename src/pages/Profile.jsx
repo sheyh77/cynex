@@ -14,13 +14,11 @@ import {
   message,
 } from "antd";
 import {
-  BookOpen,
   Bell,
   Settings,
   LogOut,
   Camera,
   CheckCircle2,
-  Clock3,
   Mail,
   Phone,
   UserRound,
@@ -38,17 +36,15 @@ import {
   doc,
   getDoc,
   updateDoc,
-  collection,
-  query,
-  orderBy,
-  onSnapshot,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import Header from "../layout/Header";
+import { useTranslation } from "react-i18next";
 
 const { Title, Text } = Typography;
 
-function Profile({ currentUser, onLogout }) {
+function Profile({ currentUser, onLogout, notifications = [] }) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
 
@@ -58,12 +54,9 @@ function Profile({ currentUser, onLogout }) {
     email: "",
     phone: "",
     avatar: null,
-    orders: [],
   });
 
-  const [orders, setOrders] = useState([]);
-  const [announcements, setAnnouncements] = useState([]);
-  const [activeTab, setActiveTab] = useState("1");
+  const [activeTab, setActiveTab] = useState("settings");
 
   // Foydalanuvchi ma'lumotlarini olish
   const fetchUserData = async () => {
@@ -77,39 +70,14 @@ function Profile({ currentUser, onLogout }) {
         const data = userSnap.data();
 
         setUserData(data);
-        setOrders((data.orders || []).filter((order) => order.accepted));
       }
     } catch (err) {
       console.error(err);
-      message.error("Ma’lumotlarni olishda xatolik ❌");
+      message.error(t("messages.dataError"));
     } finally {
       setLoading(false);
     }
   };
-
-  // Admin xabarlarini real-time olish
-  useEffect(() => {
-    const q = query(
-      collection(db, "notifications"),
-      orderBy("createdAt", "desc")
-    );
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-
-      setAnnouncements(
-        data.filter(
-          (item) =>
-            item.userId === "all" || item.userId === currentUser?.uid
-        )
-      );
-    });
-
-    return () => unsubscribe();
-  }, [currentUser]);
 
   useEffect(() => {
     fetchUserData();
@@ -129,10 +97,10 @@ function Profile({ currentUser, onLogout }) {
 
       setEditing(false);
 
-      message.success("Profil yangilandi ✅");
+      message.success(t("messages.profileUpdated"));
     } catch (err) {
       console.error(err);
-      message.error("Yangilashda xatolik ❌");
+      message.error(t("messages.updateError"));
     } finally {
       setLoading(false);
     }
@@ -157,10 +125,10 @@ function Profile({ currentUser, onLogout }) {
 
       await fetchUserData();
 
-      message.success("Avatar yuklandi ✅");
+      message.success(t("messages.avatarUploaded"));
     } catch (err) {
       console.error(err);
-      message.error("Avatar yuklashda xatolik ❌");
+      message.error(t("messages.avatarError"));
     }
   };
 
@@ -169,7 +137,7 @@ function Profile({ currentUser, onLogout }) {
       <section className="profile profile-loading">
         <div className="profile-loading-content">
           <Spin size="large" />
-          <p>Yuklanmoqda...</p>
+          <p>{t("profile.loading")}</p>
         </div>
       </section>
     );
@@ -181,7 +149,7 @@ function Profile({ currentUser, onLogout }) {
       <div className="profile-glow profile-glow-1" />
       <div className="profile-glow profile-glow-2" />
 
-      <Header />
+      <Header currentUser={currentUser} />
 
       <div className="container">
         <div className="profile-wrap">
@@ -191,16 +159,15 @@ function Profile({ currentUser, onLogout }) {
             <div>
               <div className="profile-heading-label">
                 <ShieldCheck size={15} />
-                <span>ACCOUNT CENTER</span>
+                <span>{t("profile.accountCenter")}</span>
               </div>
 
               <h1>
-                Shaxsiy <span>profil</span>
+                {t("profile.titlePart1")} <span>{t("profile.titleHighlight")}</span>
               </h1>
 
               <p>
-                Shaxsiy ma'lumotlaringiz, kurslaringiz va xabarlaringizni
-                bir joydan boshqaring.
+                {t("profile.description")}
               </p>
             </div>
           </div>
@@ -237,7 +204,7 @@ function Profile({ currentUser, onLogout }) {
                 <div className="profile-user-info">
                   <div className="profile-user-status">
                     <span />
-                    ACTIVE ACCOUNT
+                    {t("profile.activeAccount")}
                   </div>
 
                   <Title level={2}>
@@ -247,6 +214,11 @@ function Profile({ currentUser, onLogout }) {
                   <Text className="profile-username">
                     @{userData?.username}
                   </Text>
+
+                  <div className="profile-user-chips">
+                    <span>{currentUser?.role === "admin" ? t("profile.adminRole") : t("profile.userRole")}</span>
+                    <span>{userData?.active === false ? t("profile.blocked") : t("profile.verified")}</span>
+                  </div>
                 </div>
               </div>
 
@@ -258,7 +230,7 @@ function Profile({ currentUser, onLogout }) {
                   </div>
 
                   <div>
-                    <span>Email</span>
+                    <span>{t("profile.email")}</span>
                     <strong>{userData?.email || "—"}</strong>
                   </div>
                 </div>
@@ -269,11 +241,25 @@ function Profile({ currentUser, onLogout }) {
                   </div>
 
                   <div>
-                    <span>Telefon</span>
+                    <span>{t("profile.phone")}</span>
                     <strong>{userData?.phone || "—"}</strong>
                   </div>
                 </div>
 
+              </div>
+            </div>
+
+            <div className="profile-overview-strip">
+              <div className="profile-overview-card">
+                <Bell size={18} />
+                <span>{t("profile.messages")}</span>
+                <strong>{notifications.length}</strong>
+              </div>
+
+              <div className="profile-overview-card">
+                <ShieldCheck size={18} />
+                <span>{t("profile.account")}</span>
+                <strong>{userData?.active === false ? t("profile.off") : t("profile.on")}</strong>
               </div>
             </div>
 
@@ -286,80 +272,12 @@ function Profile({ currentUser, onLogout }) {
               onChange={(key) => setActiveTab(key)}
               items={[
                 {
-                  key: "1",
-
-                  label: (
-                    <span className="profile-tab-label">
-                      <BookOpen size={16} />
-                      Kurslar tarixi
-                    </span>
-                  ),
-
-                  children:
-                    orders.length > 0 ? (
-                      <div className="profile-orders">
-
-                        <div className="profile-section-heading">
-                          <div>
-                            <span>COURSE HISTORY</span>
-                            <h3>Sizning kurslaringiz</h3>
-                          </div>
-
-                          <div className="profile-count">
-                            {orders.length}
-                          </div>
-                        </div>
-
-                        <List
-                          className="profile-order-list"
-                          itemLayout="horizontal"
-                          dataSource={orders}
-                          renderItem={(order, index) => (
-                            <List.Item>
-                              <div className="profile-order-number">
-                                {String(index + 1).padStart(2, "0")}
-                              </div>
-
-                              <List.Item.Meta
-                                title={
-                                  <span className="profile-order-title">
-                                    {order.title}
-                                  </span>
-                                }
-                                description={
-                                  <span className="profile-order-date">
-                                    <Clock3 size={14} />
-                                    Sana: {order.date}
-                                  </span>
-                                }
-                              />
-
-                              <div className="profile-order-status">
-                                <CheckCircle2 size={15} />
-                                {order.status}
-                              </div>
-                            </List.Item>
-                          )}
-                        />
-                      </div>
-                    ) : (
-                      <div className="profile-empty">
-                        <BookOpen size={35} />
-                        <h3>Hozircha tasdiqlangan kurslar yo‘q.</h3>
-                        <p>
-                          Kursga yozilganingizdan so‘ng bu yerda ko‘rinadi.
-                        </p>
-                      </div>
-                    ),
-                },
-
-                {
-                  key: "2",
+                  key: "settings",
 
                   label: (
                     <span className="profile-tab-label">
                       <Settings size={16} />
-                      Sozlamalar
+                      {t("profile.settings")}
                     </span>
                   ),
 
@@ -368,8 +286,8 @@ function Profile({ currentUser, onLogout }) {
 
                       <div className="profile-section-heading">
                         <div>
-                          <span>PROFILE SETTINGS</span>
-                          <h3>Ma'lumotlarni tahrirlash</h3>
+                          <span>{t("profile.settingsLabel")}</span>
+                          <h3>{t("profile.editInfo")}</h3>
                         </div>
                       </div>
 
@@ -382,17 +300,17 @@ function Profile({ currentUser, onLogout }) {
                         <div className="profile-form-grid">
 
                           <Form.Item
-                            label="Ism"
+                            label={t("profile.name")}
                             name="name"
                           >
                             <Input
                               prefix={<UserRound size={17} />}
-                              placeholder="Ismingizni kiriting"
+                              placeholder={t("profile.namePlaceholder")}
                             />
                           </Form.Item>
 
                           <Form.Item
-                            label="Username"
+                            label={t("profile.username")}
                             name="username"
                           >
                             <Input
@@ -402,17 +320,18 @@ function Profile({ currentUser, onLogout }) {
                           </Form.Item>
 
                           <Form.Item
-                            label="Email"
+                            label={t("profile.email")}
                             name="email"
                           >
                             <Input
                               prefix={<Mail size={17} />}
                               placeholder="Email"
+                              disabled
                             />
                           </Form.Item>
 
                           <Form.Item
-                            label="Telefon"
+                            label={t("profile.phone")}
                             name="phone"
                           >
                             <Input
@@ -431,14 +350,14 @@ function Profile({ currentUser, onLogout }) {
                             className="profile-save-btn"
                             icon={<CheckCircle2 size={17} />}
                           >
-                            Saqlash
+                            {t("profile.save")}
                           </Button>
 
                           <Button
                             onClick={() => setEditing(false)}
                             className="profile-cancel-btn"
                           >
-                            Bekor qilish
+                            {t("profile.cancel")}
                           </Button>
 
                         </div>
@@ -449,30 +368,30 @@ function Profile({ currentUser, onLogout }) {
 
                       <div className="profile-section-heading">
                         <div>
-                          <span>PERSONAL INFORMATION</span>
-                          <h3>Shaxsiy ma'lumotlar</h3>
+                          <span>{t("profile.personalInfoLabel")}</span>
+                          <h3>{t("profile.personalInfo")}</h3>
                         </div>
                       </div>
 
                       <div className="profile-info-grid">
 
                         <div className="profile-info-box">
-                          <span>Ism</span>
+                          <span>{t("profile.name")}</span>
                           <strong>{userData?.name}</strong>
                         </div>
 
                         <div className="profile-info-box">
-                          <span>Username</span>
+                          <span>{t("profile.username")}</span>
                           <strong>@{userData?.username}</strong>
                         </div>
 
                         <div className="profile-info-box">
-                          <span>Email</span>
+                          <span>{t("profile.email")}</span>
                           <strong>{userData?.email}</strong>
                         </div>
 
                         <div className="profile-info-box">
-                          <span>Telefon</span>
+                          <span>{t("profile.phone")}</span>
                           <strong>{userData?.phone || "—"}</strong>
                         </div>
 
@@ -484,7 +403,7 @@ function Profile({ currentUser, onLogout }) {
                         onClick={() => setEditing(true)}
                         className="profile-edit-btn"
                       >
-                        Tahrirlash
+                        {t("profile.edit")}
                       </Button>
 
                     </div>
@@ -492,29 +411,29 @@ function Profile({ currentUser, onLogout }) {
                 },
 
                 {
-                  key: "3",
+                  key: "messages",
 
                   label: (
                     <span className="profile-tab-label">
                       <Bell size={16} />
-                      Xabarlar
+                      {t("profile.messages")}
 
-                      {announcements.length > 0 && (
+                      {notifications.length > 0 && (
                         <span className="profile-notification-count">
-                          {announcements.length}
+                          {notifications.length}
                         </span>
                       )}
                     </span>
                   ),
 
                   children:
-                    announcements.length > 0 ? (
+                    notifications.length > 0 ? (
                       <div className="profile-announcements">
 
                         <div className="profile-section-heading">
                           <div>
-                            <span>NOTIFICATIONS</span>
-                            <h3>Sizga yuborilgan xabarlar</h3>
+                            <span>{t("profile.notificationsLabel")}</span>
+                            <h3>{t("profile.sentMessages")}</h3>
                           </div>
 
                           <Bell size={20} />
@@ -524,7 +443,7 @@ function Profile({ currentUser, onLogout }) {
 
                           <List
                             itemLayout="horizontal"
-                            dataSource={announcements}
+                            dataSource={notifications}
                             renderItem={(item) => (
                               <List.Item>
 
@@ -556,9 +475,9 @@ function Profile({ currentUser, onLogout }) {
                     ) : (
                       <div className="profile-empty">
                         <Bell size={35} />
-                        <h3>Hozircha xabar yo‘q 🔔</h3>
+                        <h3>{t("profile.noMessages")}</h3>
                         <p>
-                          Yangi xabarlar shu yerda ko‘rinadi.
+                          {t("profile.noMessagesDescription")}
                         </p>
                       </div>
                     ),
@@ -571,8 +490,8 @@ function Profile({ currentUser, onLogout }) {
             {/* LOGOUT */}
             <div className="profile-logout-section">
               <div>
-                <span>ACCOUNT</span>
-                <p>Hisobingizdan xavfsiz chiqishingiz mumkin.</p>
+                <span>{t("profile.account")}</span>
+                <p>{t("profile.logoutDescription")}</p>
               </div>
 
               <Button
@@ -581,7 +500,7 @@ function Profile({ currentUser, onLogout }) {
                 icon={<LogOut size={17} />}
                 className="profile-logout-btn"
               >
-                Chiqish
+                {t("profile.logout")}
               </Button>
             </div>
 

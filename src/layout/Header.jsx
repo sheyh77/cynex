@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   MenuIcon,
   UserCircle,
@@ -7,23 +7,54 @@ import {
   Sparkles,
   ArrowUpRight,
   Languages,
+  ChevronDown,
+  Check,
+  LayoutDashboard,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
-function Header({ onStartClick, notifications = [] }) {
+function Header({ onStartClick, notifications = [], currentUser }) {
   const { t, i18n } = useTranslation();
 
   const [active, setActive] = useState("home");
+  const [isLanguageOpen, setIsLanguageOpen] = useState(false);
 
   const MenuRef = useRef(null);
   const MenuBtn = useRef(null);
   const CloseBtn = useRef(null);
+  const LanguageRef = useRef(null);
+
+  const languages = [
+    { code: "uz", label: "O'zbek", short: "UZ" },
+    { code: "ru", label: "Русский", short: "RU" },
+    { code: "en", label: "English", short: "EN" },
+  ];
+
+  const currentLanguage =
+    languages.find((language) =>
+      i18n.language?.toLowerCase().startsWith(language.code)
+    ) || languages[0];
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (!LanguageRef.current?.contains(event.target)) {
+        setIsLanguageOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, []);
 
   const changeLanguage = (lang) => {
     i18n.changeLanguage(lang);
     localStorage.setItem("language", lang);
+    setIsLanguageOpen(false);
   };
 
   const MenuClick = () => {
@@ -87,6 +118,8 @@ function Header({ onStartClick, notifications = [] }) {
     (notification) => !notification.read
   ).length;
 
+  const isAdmin = currentUser?.role === "admin";
+
   return (
     <header className="header">
       <div className="header-glow header-glow-one" />
@@ -130,7 +163,7 @@ function Header({ onStartClick, notifications = [] }) {
                 <span>{item.label}</span>
 
                 {active === item.key && (
-                  <motion.span
+                  <Motion.span
                     className="header-nav-dot"
                     layoutId="headerActiveDot"
                     transition={{
@@ -145,27 +178,76 @@ function Header({ onStartClick, notifications = [] }) {
           </nav>
 
           {/* LANGUAGE */}
-          <div className="language-switcher">
-            <Languages size={15} />
+          <div className="language-switcher" ref={LanguageRef}>
+            <button
+              type="button"
+              className="language-trigger"
+              onClick={() => setIsLanguageOpen((open) => !open)}
+              aria-label="Select language"
+              aria-expanded={isLanguageOpen}
+            >
+              <span className="language-trigger-icon">
+                <Languages size={15} />
+              </span>
 
-            {["uz", "ru", "en"].map((lang) => (
-              <button
-                key={lang}
-                type="button"
-                className={
-                  i18n.language?.toLowerCase().startsWith(lang)
-                    ? "active"
-                    : ""
-                }
-                onClick={() => changeLanguage(lang)}
+              <span className="language-trigger-text">
+                <strong>{currentLanguage.short}</strong>
+                <small>{currentLanguage.label}</small>
+              </span>
+
+              <ChevronDown
+                className={`language-chevron ${isLanguageOpen ? "active" : ""}`}
+                size={15}
+              />
+            </button>
+
+            {isLanguageOpen && (
+              <Motion.div
+                className="language-dropdown"
+                initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.18, ease: "easeOut" }}
               >
-                {lang.toUpperCase()}
-              </button>
-            ))}
+                {languages.map((language) => {
+                  const isActive = currentLanguage.code === language.code;
+
+                  return (
+                    <button
+                      key={language.code}
+                      type="button"
+                      className={`language-option ${isActive ? "active" : ""}`}
+                      onClick={() => changeLanguage(language.code)}
+                    >
+                      <span>{language.short}</span>
+                      <strong>{language.label}</strong>
+                      {isActive && <Check size={15} />}
+                    </button>
+                  );
+                })}
+              </Motion.div>
+            )}
           </div>
 
           {/* ACTIONS */}
           <div className="header-actions">
+            {isAdmin && (
+              <Link
+                to="/admin"
+                className="header-profile-btn header-admin-btn"
+                aria-label="Admin panel"
+              >
+                <LayoutDashboard size={19} />
+
+                <span className="header-profile-text">
+                  Admin
+                </span>
+
+                <ArrowUpRight
+                  className="header-profile-arrow"
+                  size={15}
+                />
+              </Link>
+            )}
 
             {/* NOTIFICATION */}
             <Link
@@ -177,7 +259,7 @@ function Header({ onStartClick, notifications = [] }) {
               <Bell size={20} />
 
               {newNotificationsCount > 0 && (
-                <motion.span
+                <Motion.span
                   className="notification-count"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
@@ -185,7 +267,7 @@ function Header({ onStartClick, notifications = [] }) {
                   {newNotificationsCount > 99
                     ? "99+"
                     : newNotificationsCount}
-                </motion.span>
+                </Motion.span>
               )}
             </Link>
 
@@ -220,7 +302,7 @@ function Header({ onStartClick, notifications = [] }) {
           </button>
 
           {/* MOBILE CLOSE */}
-          <motion.button
+          <Motion.button
             type="button"
             className="header-menu-close"
             ref={CloseBtn}
@@ -230,7 +312,7 @@ function Header({ onStartClick, notifications = [] }) {
             whileTap={{ scale: 0.9 }}
           >
             <X size={27} />
-          </motion.button>
+          </Motion.button>
         </div>
 
         {/* MOBILE MENU */}
@@ -265,6 +347,40 @@ function Header({ onStartClick, notifications = [] }) {
                   <ArrowUpRight size={18} />
                 </a>
               ))}
+
+              {isAdmin && (
+                <Link
+                  to="/admin"
+                  className="header-menu-title"
+                  onClick={CloseMenu}
+                >
+                  <span className="header-menu-number">
+                    06
+                  </span>
+
+                  <span>Admin panel</span>
+
+                  <ArrowUpRight size={18} />
+                </Link>
+              )}
+
+              <div className="header-menu-language">
+                {languages.map((language) => {
+                  const isActive = currentLanguage.code === language.code;
+
+                  return (
+                    <button
+                      key={language.code}
+                      type="button"
+                      className={isActive ? "active" : ""}
+                      onClick={() => changeLanguage(language.code)}
+                    >
+                      <span>{language.short}</span>
+                      <strong>{language.label}</strong>
+                    </button>
+                  );
+                })}
+              </div>
 
               <button
                 type="button"
